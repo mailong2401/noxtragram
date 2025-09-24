@@ -1,0 +1,138 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Flutter template
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+**/build/
+
+# Web related
+lib/generated_plugin_registrant.dart
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio/IntelliJ related
+**/android/**/gradle-wrapper.jar
+.idea/
+**.iml
+*.iws
+*.eml
+*.ipr
+/local.properties
+!gradle-wrapper.jar
+
+# Visual Studio Code related
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Windows related
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS related
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# iOS related
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/profile
+**/ios/**/xcuserdata
+**/ios/.generated/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# Android related
+**/android/**/gradle-wrapper.jar
+**/android/.gradle
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/LocalSettings.swift
+**/android/**/GeneratedPluginRegistrant.java
+**/android/**/GeneratedPluginRegistrant.swift
+
+# Android build outputs - FIXED (chuyên nghiệp)
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Build outputs
+*.apk
+*.aab
+*.ipa
+*.dmg
+*.app
+
+# Coverage
+coverage/
+
+# Firebase
+**/firebase-debug.log
+**/firebase-app-desktop.log
+
+# Miscellaneous
+*.jks
+*.key
+*.p12
+*.pem
+*.der
+*.key
+*.cer
+*.crt
+*.pub
+*.sig
+.classpath
+.project
+.settings/
+
+# Additional Flutter specific
+/Flutter.podspec
+/GeneratedPluginRegistrant.h
+/GeneratedPluginRegistrant.m
