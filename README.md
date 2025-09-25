@@ -4,20 +4,20 @@ A Spring Boot backend for Instagram-like social media application with real-time
 
 ## 🚀 Tech Stack
 
-- **Framework**: Spring Boot 3.x
-- **Database**: PostgreSQL / MySQL
+- **Framework**: Spring Boot 3.3.1
+- **Database**: MySQL
 - **Authentication**: JWT (JSON Web Token)
 - **Real-time**: WebSocket (STOMP)
 - **File Storage**: Local file system / AWS S3
 - **Caching**: Redis (optional)
 - **Build Tool**: Maven
-- **Java Version**: 17+
+- **Java Version**: 21+
 
 ## 📋 Prerequisites
 
-- Java 17 or higher
+- Java 21 or higher
 - Maven 3.6+
-- PostgreSQL 12+ or MySQL 8+
+- MySQL 8+
 - Redis (optional, for caching)
 
 ## 🔧 Installation & Setup
