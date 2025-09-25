@@ -36,41 +36,54 @@ public class UserService {
 
   // 👤 BASIC USER OPERATIONS
 
-  // ✅ Thêm phương thức getCurrentUserDTO
+  // ✅ Phương thức getCurrentUserDTO (có thể giữ lại hoặc xóa nếu không cần)
   public UserDTO getCurrentUserDTO(Long userId) {
-    User user = findById(userId);
+    User user = findEntityById(userId);
     return UserMapper.toDTO(user);
   }
 
   /**
-   * Tìm user bằng ID
+   * Tìm user bằng ID và trả về UserDTO
    */
-  public User findById(Long id) {
+  public UserDTO findById(Long id) {
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    return UserMapper.toDTO(user);
+  }
+
+  /**
+   * Tìm user entity bằng ID (dùng cho nội bộ service)
+   */
+  private User findEntityById(Long id) {
     return userRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
   }
 
   /**
-   * Tìm user bằng email
+   * Tìm user bằng email và trả về UserDTO
    */
-  public User findByEmail(String email) {
-    return userRepository.findByEmail(email)
+  public UserDTO findByEmail(String email) {
+    User user = userRepository.findByEmail(email)
         .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+    return UserMapper.toDTO(user);
   }
 
   /**
-   * Tìm user bằng username
+   * Tìm user bằng username và trả về UserDTO
    */
-  public User findByUsername(String username) {
-    return userRepository.findByUsername(username)
+  public UserDTO findByUsername(String username) {
+    User user = userRepository.findByUsername(username)
         .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+    return UserMapper.toDTO(user);
   }
 
   /**
-   * Lấy tất cả user active
+   * Lấy tất cả user active dưới dạng DTO
    */
-  public List<User> findAllActiveUsers() {
-    return userRepository.findAllActiveUsers();
+  public List<UserDTO> findAllActiveUsers() {
+    return userRepository.findAllActiveUsers().stream()
+        .map(UserMapper::toDTO)
+        .toList();
   }
 
   /**
@@ -106,7 +119,7 @@ public class UserService {
    * Cập nhật thông tin user
    */
   public UserDTO updateUser(Long userId, UserUpdateDTO userUpdateDTO) {
-    User user = findById(userId);
+    User user = findEntityById(userId);
 
     UserMapper.updateEntityFromDTO(userUpdateDTO, user);
     user.setUpdatedAt(LocalDateTime.now());
@@ -119,7 +132,7 @@ public class UserService {
    * Xóa user (soft delete)
    */
   public void deleteUser(Long userId) {
-    User user = findById(userId);
+    User user = findEntityById(userId);
     user.setIsActive(false);
     user.setEmail("deleted_" + System.currentTimeMillis() + "_" + user.getEmail());
     user.setUsername("deleted_" + System.currentTimeMillis() + "_" + user.getUsername());
@@ -130,10 +143,11 @@ public class UserService {
   // 🔐 AUTHENTICATION & SECURITY
 
   /**
-   * Xác thực user login
+   * Xác thực user login (vẫn trả về entity để Spring Security sử dụng)
    */
   public User authenticateUser(String email, String password) {
-    User user = findByEmail(email);
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
     if (!passwordEncoder.matches(password, user.getPassword())) {
       throw new OperationNotAllowedException("Invalid password");
@@ -150,7 +164,7 @@ public class UserService {
    * Thay đổi password
    */
   public void changePassword(Long userId, String currentPassword, String newPassword) {
-    User user = findById(userId);
+    User user = findEntityById(userId);
 
     if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
       throw new OperationNotAllowedException("Current password is incorrect");
@@ -165,7 +179,8 @@ public class UserService {
    * Reset password (quên mật khẩu)
    */
   public void resetPassword(String email, String newPassword) {
-    User user = findByEmail(email);
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     user.setPassword(passwordEncoder.encode(newPassword));
     user.setUpdatedAt(LocalDateTime.now());
     userRepository.save(user);
@@ -174,10 +189,10 @@ public class UserService {
   // 📸 PROFILE MANAGEMENT
 
   /**
-   * Upload profile picture
+   * Upload profile picture và trả về DTO
    */
-  public User uploadProfilePicture(Long userId, MultipartFile file) {
-    User user = findById(userId);
+  public UserDTO uploadProfilePicture(Long userId, MultipartFile file) {
+    User user = findEntityById(userId);
 
     String fileName = fileStorageService.storeFile(file, "profiles");
     String oldProfilePicture = user.getProfilePicture();
@@ -192,23 +207,24 @@ public class UserService {
       fileStorageService.deleteFile(oldProfilePicture, "profiles");
     }
 
-    return updatedUser;
+    return UserMapper.toDTO(updatedUser);
   }
 
   /**
-   * Xóa profile picture
+   * Xóa profile picture và trả về DTO
    */
-  public User removeProfilePicture(Long userId) {
-    User user = findById(userId);
+  public UserDTO removeProfilePicture(Long userId) {
+    User user = findEntityById(userId);
 
     if (user.getProfilePicture() != null) {
       fileStorageService.deleteFile(user.getProfilePicture(), "profiles");
       user.setProfilePicture(null);
       user.setUpdatedAt(LocalDateTime.now());
-      return userRepository.save(user);
+      User updatedUser = userRepository.save(user);
+      return UserMapper.toDTO(updatedUser);
     }
 
-    return user;
+    return UserMapper.toDTO(user);
   }
 
   // 👥 FOLLOW SYSTEM
@@ -221,8 +237,8 @@ public class UserService {
       throw new OperationNotAllowedException("Cannot follow yourself");
     }
 
-    User follower = findById(followerId);
-    User following = findById(followingId);
+    User follower = findEntityById(followerId);
+    User following = findEntityById(followingId);
 
     if (follower.getFollowing().contains(following)) {
       throw new OperationNotAllowedException("Already following this user");
@@ -230,7 +246,6 @@ public class UserService {
 
     // Kiểm tra nếu user là private
     if (following.getIsPrivate()) {
-      // Ở đây có thể implement follow request system
       throw new OperationNotAllowedException("This account is private. Send follow request instead.");
     }
 
@@ -242,8 +257,8 @@ public class UserService {
    * Unfollow một user
    */
   public void unfollowUser(Long followerId, Long followingId) {
-    User follower = findById(followerId);
-    User following = findById(followingId);
+    User follower = findEntityById(followerId);
+    User following = findEntityById(followingId);
 
     if (!follower.getFollowing().contains(following)) {
       throw new OperationNotAllowedException("Not following this user");
@@ -257,32 +272,36 @@ public class UserService {
    * Kiểm tra user A có follow user B không
    */
   public boolean isFollowing(Long userId, Long targetUserId) {
-    User user = findById(userId);
-    User targetUser = findById(targetUserId);
+    User user = findEntityById(userId);
+    User targetUser = findEntityById(targetUserId);
     return user.isFollowing(targetUser);
   }
 
   /**
-   * Lấy danh sách followers của user
+   * Lấy danh sách followers của user dưới dạng DTO
    */
-  public List<User> getFollowers(Long userId) {
-    User user = findById(userId);
-    return userRepository.findFollowersByUserId(userId);
+  public List<UserDTO> getFollowers(Long userId) {
+    User user = findEntityById(userId);
+    return userRepository.findFollowersByUserId(userId).stream()
+        .map(UserMapper::toDTO)
+        .toList();
   }
 
   /**
-   * Lấy danh sách following của user
+   * Lấy danh sách following của user dưới dạng DTO
    */
-  public List<User> getFollowing(Long userId) {
-    User user = findById(userId);
-    return userRepository.findFollowingByUserId(userId);
+  public List<UserDTO> getFollowing(Long userId) {
+    User user = findEntityById(userId);
+    return userRepository.findFollowingByUserId(userId).stream()
+        .map(UserMapper::toDTO)
+        .toList();
   }
 
   /**
    * Lấy số lượng followers
    */
   public Integer getFollowerCount(Long userId) {
-    User user = findById(userId);
+    User user = findEntityById(userId);
     return user.getFollowers().size();
   }
 
@@ -290,30 +309,34 @@ public class UserService {
    * Lấy số lượng following
    */
   public Integer getFollowingCount(Long userId) {
-    User user = findById(userId);
+    User user = findEntityById(userId);
     return user.getFollowing().size();
   }
 
   // 🔍 SEARCH & DISCOVERY
 
   /**
-   * Tìm kiếm user theo username
+   * Tìm kiếm user theo username dưới dạng DTO
    */
-  public List<User> searchByUsername(String username) {
-    return userRepository.findByUsernameContainingIgnoreCase(username);
+  public List<UserDTO> searchByUsername(String username) {
+    return userRepository.findByUsernameContainingIgnoreCase(username).stream()
+        .map(UserMapper::toDTO)
+        .toList();
   }
 
   /**
-   * Tìm kiếm user theo full name
+   * Tìm kiếm user theo full name dưới dạng DTO
    */
-  public List<User> searchByFullName(String fullName) {
-    return userRepository.findByFullNameContainingIgnoreCase(fullName);
+  public List<UserDTO> searchByFullName(String fullName) {
+    return userRepository.findByFullNameContainingIgnoreCase(fullName).stream()
+        .map(UserMapper::toDTO)
+        .toList();
   }
 
   /**
-   * Tìm kiếm user (kết hợp username và full name)
+   * Tìm kiếm user (kết hợp username và full name) dưới dạng DTO
    */
-  public List<User> searchUsers(String keyword) {
+  public List<UserDTO> searchUsers(String keyword) {
     List<User> byUsername = userRepository.findByUsernameContainingIgnoreCase(keyword);
     List<User> byFullName = userRepository.findByFullNameContainingIgnoreCase(keyword);
 
@@ -322,34 +345,32 @@ public class UserService {
         .filter(user -> !byUsername.contains(user))
         .toList());
 
-    return byUsername;
+    return byUsername.stream()
+        .map(UserMapper::toDTO)
+        .toList();
   }
 
   // 📊 USER STATISTICS
 
   /**
-   * Lấy suggested users để follow (dựa trên mutual friends, interests, etc.)
+   * Lấy suggested users để follow dưới dạng DTO
    */
-  public List<User> getSuggestedUsers(Long userId, int limit) {
-    User currentUser = findById(userId);
+  public List<UserDTO> getSuggestedUsers(Long userId, int limit) {
+    User currentUser = findEntityById(userId);
 
-    // Simple algorithm: suggest users who are followed by people you follow
     return userRepository.findAllActiveUsers().stream()
         .filter(user -> !user.equals(currentUser))
         .filter(user -> !currentUser.getFollowing().contains(user))
         .sorted((u1, u2) -> {
-          // Simple ranking algorithm (có thể cải tiến)
           int u1Score = calculateUserScore(currentUser, u1);
           int u2Score = calculateUserScore(currentUser, u2);
           return Integer.compare(u2Score, u1Score);
         })
         .limit(limit)
+        .map(UserMapper::toDTO)
         .toList();
   }
 
-  /**
-   * Tính điểm để gợi ý user (algorithm có thể cải tiến)
-   */
   private int calculateUserScore(User currentUser, User suggestedUser) {
     int score = 0;
 
@@ -359,52 +380,53 @@ public class UserService {
         .count();
     score += mutualFollowers * 10;
 
-    // Common interests (có thể dựa trên hashtags, posts, etc.)
-    // TODO: Implement based on actual data
-
     return score;
   }
 
   // 🎯 USER VERIFICATION & ADMIN OPERATIONS
 
   /**
-   * Verify user (admin operation)
+   * Verify user (admin operation) và trả về DTO
    */
-  public User verifyUser(Long userId) {
-    User user = findById(userId);
+  public UserDTO verifyUser(Long userId) {
+    User user = findEntityById(userId);
     user.setIsVerified(true);
     user.setUpdatedAt(LocalDateTime.now());
-    return userRepository.save(user);
+    User verifiedUser = userRepository.save(user);
+    return UserMapper.toDTO(verifiedUser);
   }
 
   /**
-   * Unverify user (admin operation)
+   * Unverify user (admin operation) và trả về DTO
    */
-  public User unverifyUser(Long userId) {
-    User user = findById(userId);
+  public UserDTO unverifyUser(Long userId) {
+    User user = findEntityById(userId);
     user.setIsVerified(false);
     user.setUpdatedAt(LocalDateTime.now());
-    return userRepository.save(user);
+    User unverifiedUser = userRepository.save(user);
+    return UserMapper.toDTO(unverifiedUser);
   }
 
   /**
-   * Deactivate user (admin operation)
+   * Deactivate user (admin operation) và trả về DTO
    */
-  public User deactivateUser(Long userId) {
-    User user = findById(userId);
+  public UserDTO deactivateUser(Long userId) {
+    User user = findEntityById(userId);
     user.setIsActive(false);
     user.setUpdatedAt(LocalDateTime.now());
-    return userRepository.save(user);
+    User deactivatedUser = userRepository.save(user);
+    return UserMapper.toDTO(deactivatedUser);
   }
 
   /**
-   * Reactivate user (admin operation)
+   * Reactivate user (admin operation) và trả về DTO
    */
-  public User reactivateUser(Long userId) {
-    User user = findById(userId);
+  public UserDTO reactivateUser(Long userId) {
+    User user = findEntityById(userId);
     user.setIsActive(true);
     user.setUpdatedAt(LocalDateTime.now());
-    return userRepository.save(user);
+    User reactivatedUser = userRepository.save(user);
+    return UserMapper.toDTO(reactivatedUser);
   }
 
   // 🔧 UTILITY METHODS
@@ -434,8 +456,7 @@ public class UserService {
    * Update last login time
    */
   public void updateLastLogin(Long userId) {
-    User user = findById(userId);
-    // Có thể thêm field lastLogin trong User entity nếu cần
+    User user = findEntityById(userId);
     user.setUpdatedAt(LocalDateTime.now());
     userRepository.save(user);
   }

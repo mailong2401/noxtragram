@@ -95,7 +95,7 @@ public class PostSave {
     this.user = user;
   }
 
-  public Post post() {
+  public Post getPost() {
     return post;
   }
 

@@ -5,6 +5,8 @@ import com.noxtragram.model.entity.User;
 import com.noxtragram.service.UserService;
 import com.noxtragram.exception.DuplicateResourceException;
 import com.noxtragram.exception.OperationNotAllowedException;
+import com.noxtragram.exception.ResourceNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,12 +31,14 @@ public class UserController {
    * Lấy thông tin user bằng ID
    */
   @GetMapping("/{userId}")
-  public ResponseEntity<User> getUserById(@PathVariable Long userId) {
+  public ResponseEntity<UserDTO> getUserById(@PathVariable Long userId) {
     try {
-      User user = userService.findById(userId);
-      return ResponseEntity.ok(user);
-    } catch (Exception e) {
+      UserDTO userDTO = userService.findById(userId);
+      return ResponseEntity.ok(userDTO);
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 
@@ -42,12 +46,14 @@ public class UserController {
    * Lấy thông tin user bằng username
    */
   @GetMapping("/username/{username}")
-  public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
+  public ResponseEntity<UserDTO> getUserByUsername(@PathVariable String username) {
     try {
-      User user = userService.findByUsername(username);
-      return ResponseEntity.ok(user);
-    } catch (Exception e) {
+      UserDTO userDTO = userService.findByUsername(username);
+      return ResponseEntity.ok(userDTO);
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 
@@ -55,12 +61,14 @@ public class UserController {
    * Lấy thông tin user bằng email
    */
   @GetMapping("/email/{email}")
-  public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
+  public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {
     try {
-      User user = userService.findByEmail(email);
-      return ResponseEntity.ok(user);
-    } catch (Exception e) {
+      UserDTO userDTO = userService.findByEmail(email);
+      return ResponseEntity.ok(userDTO);
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 
@@ -70,9 +78,9 @@ public class UserController {
    * Lấy tất cả user active
    */
   @GetMapping
-  public ResponseEntity<List<User>> getAllActiveUsers() {
+  public ResponseEntity<List<UserDTO>> getAllActiveUsers() {
     try {
-      List<User> users = userService.findAllActiveUsers();
+      List<UserDTO> users = userService.findAllActiveUsers();
       return ResponseEntity.ok(users);
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -94,7 +102,7 @@ public class UserController {
           Map.of("error", e.getMessage()));
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-          Map.of("error", "Something went wrong", "details", e.getMessage()));
+          Map.of("error", "Something went wrong"));
     }
   }
 
@@ -104,14 +112,16 @@ public class UserController {
    * Cập nhật thông tin user
    */
   @PutMapping("/{userId}")
-  public ResponseEntity<User> updateUserProfile(
+  public ResponseEntity<UserDTO> updateUserProfile(
       @PathVariable Long userId,
-      @Valid @RequestBody User userDetails) {
+      @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
     try {
-      User updatedUser = userService.updateUser(userId, userDetails);
+      UserDTO updatedUser = userService.updateUser(userId, userUpdateDTO);
       return ResponseEntity.ok(updatedUser);
-    } catch (Exception e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 
@@ -125,8 +135,10 @@ public class UserController {
     try {
       userService.deleteUser(userId);
       return ResponseEntity.noContent().build();
-    } catch (Exception e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 
@@ -143,7 +155,7 @@ public class UserController {
 
       User authenticatedUser = userService.authenticateUser(email, password);
       return ResponseEntity.ok(authenticatedUser);
-    } catch (OperationNotAllowedException e) {
+    } catch (OperationNotAllowedException | ResourceNotFoundException e) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -165,6 +177,8 @@ public class UserController {
       return ResponseEntity.ok().build();
     } catch (OperationNotAllowedException e) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    } catch (ResourceNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
@@ -181,8 +195,10 @@ public class UserController {
 
       userService.resetPassword(email, newPassword);
       return ResponseEntity.ok().build();
-    } catch (Exception e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 
@@ -192,12 +208,14 @@ public class UserController {
    * Upload profile picture
    */
   @PostMapping("/{userId}/profile-picture")
-  public ResponseEntity<User> uploadProfilePicture(
+  public ResponseEntity<UserDTO> uploadProfilePicture(
       @PathVariable Long userId,
       @RequestParam("file") MultipartFile file) {
     try {
-      User updatedUser = userService.uploadProfilePicture(userId, file);
+      UserDTO updatedUser = userService.uploadProfilePicture(userId, file);
       return ResponseEntity.ok(updatedUser);
+    } catch (ResourceNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
@@ -207,10 +225,12 @@ public class UserController {
    * Xóa profile picture
    */
   @DeleteMapping("/{userId}/profile-picture")
-  public ResponseEntity<User> removeProfilePicture(@PathVariable Long userId) {
+  public ResponseEntity<UserDTO> removeProfilePicture(@PathVariable Long userId) {
     try {
-      User updatedUser = userService.removeProfilePicture(userId);
+      UserDTO updatedUser = userService.removeProfilePicture(userId);
       return ResponseEntity.ok(updatedUser);
+    } catch (ResourceNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
@@ -229,7 +249,9 @@ public class UserController {
       userService.followUser(followerId, followingId);
       return ResponseEntity.ok().build();
     } catch (OperationNotAllowedException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+    } catch (ResourceNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
@@ -246,7 +268,9 @@ public class UserController {
       userService.unfollowUser(followerId, followingId);
       return ResponseEntity.ok().build();
     } catch (OperationNotAllowedException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+    } catch (ResourceNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
@@ -262,6 +286,8 @@ public class UserController {
     try {
       boolean isFollowing = userService.isFollowing(userId, targetUserId);
       return ResponseEntity.ok(isFollowing);
+    } catch (ResourceNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
@@ -271,10 +297,12 @@ public class UserController {
    * Lấy danh sách followers của user
    */
   @GetMapping("/{userId}/followers")
-  public ResponseEntity<List<User>> getFollowers(@PathVariable Long userId) {
+  public ResponseEntity<List<UserDTO>> getFollowers(@PathVariable Long userId) {
     try {
-      List<User> followers = userService.getFollowers(userId);
+      List<UserDTO> followers = userService.getFollowers(userId);
       return ResponseEntity.ok(followers);
+    } catch (ResourceNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
@@ -284,10 +312,12 @@ public class UserController {
    * Lấy danh sách following của user
    */
   @GetMapping("/{userId}/following")
-  public ResponseEntity<List<User>> getFollowing(@PathVariable Long userId) {
+  public ResponseEntity<List<UserDTO>> getFollowing(@PathVariable Long userId) {
     try {
-      List<User> following = userService.getFollowing(userId);
+      List<UserDTO> following = userService.getFollowing(userId);
       return ResponseEntity.ok(following);
+    } catch (ResourceNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
@@ -305,6 +335,8 @@ public class UserController {
       return ResponseEntity.ok(Map.of(
           "followerCount", followerCount,
           "followingCount", followingCount));
+    } catch (ResourceNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
@@ -316,9 +348,9 @@ public class UserController {
    * Tìm kiếm user theo keyword (username hoặc full name)
    */
   @GetMapping("/search")
-  public ResponseEntity<List<User>> searchUsers(@RequestParam String keyword) {
+  public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam String keyword) {
     try {
-      List<User> users = userService.searchUsers(keyword);
+      List<UserDTO> users = userService.searchUsers(keyword);
       return ResponseEntity.ok(users);
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -329,9 +361,9 @@ public class UserController {
    * Tìm kiếm user theo username
    */
   @GetMapping("/search/username")
-  public ResponseEntity<List<User>> searchByUsername(@RequestParam String username) {
+  public ResponseEntity<List<UserDTO>> searchByUsername(@RequestParam String username) {
     try {
-      List<User> users = userService.searchByUsername(username);
+      List<UserDTO> users = userService.searchByUsername(username);
       return ResponseEntity.ok(users);
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -342,9 +374,9 @@ public class UserController {
    * Tìm kiếm user theo full name
    */
   @GetMapping("/search/fullname")
-  public ResponseEntity<List<User>> searchByFullName(@RequestParam String fullName) {
+  public ResponseEntity<List<UserDTO>> searchByFullName(@RequestParam String fullName) {
     try {
-      List<User> users = userService.searchByFullName(fullName);
+      List<UserDTO> users = userService.searchByFullName(fullName);
       return ResponseEntity.ok(users);
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -357,12 +389,14 @@ public class UserController {
    * Lấy suggested users để follow
    */
   @GetMapping("/{userId}/suggestions")
-  public ResponseEntity<List<User>> getSuggestedUsers(
+  public ResponseEntity<List<UserDTO>> getSuggestedUsers(
       @PathVariable Long userId,
       @RequestParam(defaultValue = "10") int limit) {
     try {
-      List<User> suggestedUsers = userService.getSuggestedUsers(userId, limit);
+      List<UserDTO> suggestedUsers = userService.getSuggestedUsers(userId, limit);
       return ResponseEntity.ok(suggestedUsers);
+    } catch (ResourceNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
@@ -415,12 +449,14 @@ public class UserController {
    * Verify user (admin only)
    */
   @PostMapping("/{userId}/verify")
-  public ResponseEntity<User> verifyUser(@PathVariable Long userId) {
+  public ResponseEntity<UserDTO> verifyUser(@PathVariable Long userId) {
     try {
-      User verifiedUser = userService.verifyUser(userId);
+      UserDTO verifiedUser = userService.verifyUser(userId);
       return ResponseEntity.ok(verifiedUser);
-    } catch (Exception e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 
@@ -428,12 +464,14 @@ public class UserController {
    * Deactivate user (admin only)
    */
   @PostMapping("/{userId}/deactivate")
-  public ResponseEntity<User> deactivateUser(@PathVariable Long userId) {
+  public ResponseEntity<UserDTO> deactivateUser(@PathVariable Long userId) {
     try {
-      User deactivatedUser = userService.deactivateUser(userId);
+      UserDTO deactivatedUser = userService.deactivateUser(userId);
       return ResponseEntity.ok(deactivatedUser);
-    } catch (Exception e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 
@@ -441,12 +479,14 @@ public class UserController {
    * Reactivate user (admin only)
    */
   @PostMapping("/{userId}/reactivate")
-  public ResponseEntity<User> reactivateUser(@PathVariable Long userId) {
+  public ResponseEntity<UserDTO> reactivateUser(@PathVariable Long userId) {
     try {
-      User reactivatedUser = userService.reactivateUser(userId);
+      UserDTO reactivatedUser = userService.reactivateUser(userId);
       return ResponseEntity.ok(reactivatedUser);
-    } catch (Exception e) {
+    } catch (ResourceNotFoundException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 }
