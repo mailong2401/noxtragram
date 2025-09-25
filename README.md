@@ -5,7 +5,7 @@ Một ứng dụng mạng xã hội được xây dựng với Flutter cho front
 ![Flutter](https://img.shields.io/badge/Flutter-3.19.0-blue?logo=flutter)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-green?logo=spring)
 ![Dart](https://img.shields.io/badge/Dart-3.3.0-blue?logo=dart)
-![Java](https://img.shields.io/badge/Java-17-red?logo=java)
+![Java](https://img.shields.io/badge/Java-21-red?logo=java)
 
 ## 🌟 Tính năng
 
