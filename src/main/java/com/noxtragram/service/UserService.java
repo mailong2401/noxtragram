@@ -1,7 +1,9 @@
 package com.noxtragram.service;
 
+import com.noxtragram.model.dto.user.*;
 import com.noxtragram.model.entity.User;
 import com.noxtragram.exception.ResourceNotFoundException;
+import com.noxtragram.mapper.UserMapper;
 import com.noxtragram.exception.DuplicateResourceException;
 import com.noxtragram.exception.OperationNotAllowedException;
 import com.noxtragram.repository.UserRepository;
@@ -33,6 +35,12 @@ public class UserService {
   }
 
   // 👤 BASIC USER OPERATIONS
+
+  // ✅ Thêm phương thức getCurrentUserDTO
+  public UserDTO getCurrentUserDTO(Long userId) {
+    User user = findById(userId);
+    return UserMapper.toDTO(user);
+  }
 
   /**
    * Tìm user bằng ID
@@ -68,7 +76,7 @@ public class UserService {
   /**
    * Tạo user mới (đăng ký)
    */
-  public User createUser(User user) {
+  public UserDTO createUser(User user) {
     // Kiểm tra email đã tồn tại
     if (userRepository.existsByEmail(user.getEmail())) {
       throw new DuplicateResourceException("Email already exists: " + user.getEmail());
@@ -86,37 +94,25 @@ public class UserService {
     user.setIsActive(true);
     user.setIsVerified(false);
     user.setIsPrivate(false);
-    user.setCreatedAt(LocalDateTime.now());
 
-    return userRepository.save(user);
+    // Lưu vào DB
+    User savedUser = userRepository.save(user);
+
+    // Trả về DTO (ẩn password)
+    return UserMapper.toDTO(savedUser);
   }
 
   /**
    * Cập nhật thông tin user
    */
-  public User updateUser(Long userId, User userDetails) {
+  public UserDTO updateUser(Long userId, UserUpdateDTO userUpdateDTO) {
     User user = findById(userId);
 
-    // Kiểm tra và cập nhật các field được phép
-    if (userDetails.getFullName() != null) {
-      user.setFullName(userDetails.getFullName());
-    }
-    if (userDetails.getBio() != null) {
-      user.setBio(userDetails.getBio());
-    }
-    if (userDetails.getWebsite() != null) {
-      user.setWebsite(userDetails.getWebsite());
-    }
-    if (userDetails.getPhoneNumber() != null) {
-      user.setPhoneNumber(userDetails.getPhoneNumber());
-    }
-    if (userDetails.getIsPrivate() != null) {
-      user.setIsPrivate(userDetails.getIsPrivate());
-    }
-
+    UserMapper.updateEntityFromDTO(userUpdateDTO, user);
     user.setUpdatedAt(LocalDateTime.now());
 
-    return userRepository.save(user);
+    User updatedUser = userRepository.save(user);
+    return UserMapper.toDTO(updatedUser);
   }
 
   /**

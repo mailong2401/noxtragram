@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -87,21 +89,25 @@ public class User {
   // 👥 Followers/Following (Many-to-Many self-referencing)
   @ManyToMany
   @JoinTable(name = "user_follows", joinColumns = @JoinColumn(name = "follower_id"), inverseJoinColumns = @JoinColumn(name = "following_id"))
+  @JsonIgnore // 👈 không serialize following trực tiếp
   private Set<User> following = new HashSet<>();
 
   @ManyToMany(mappedBy = "following")
+  @JsonIgnore // 👈 không serialize followers trực tiếp
   private Set<User> followers = new HashSet<>();
 
-  // 📸 Posts (One-to-Many)
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore // 👈 tránh vòng lặp user → post → user
   private List<Post> posts = new ArrayList<>();
 
   // 💬 Comments (One-to-Many)
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
   private List<Comment> comments = new ArrayList<>();
 
   // ❤️ Likes (One-to-Many)
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
   private List<Like> likes = new ArrayList<>();
 
   // 💌 Messages sent (One-to-Many)
