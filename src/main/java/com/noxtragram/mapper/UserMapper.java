@@ -1,52 +1,80 @@
 package com.noxtragram.mapper;
 
-import com.noxtragram.model.dto.user.*;
+import com.noxtragram.model.dto.request.UserRequestDTO;
+import com.noxtragram.model.dto.request.UserUpdateRequestDTO;
+import com.noxtragram.model.dto.response.UserResponseDTO;
 import com.noxtragram.model.entity.User;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UserMapper {
 
-  public static UserDTO toDTO(User user) {
-    if (user == null)
+  public User toEntity(UserRequestDTO userRequestDTO) {
+    if (userRequestDTO == null) {
       return null;
-
-    return UserDTO.builder()
-        .id(user.getId())
-        .username(user.getUsername())
-        .email(user.getEmail())
-        .fullName(user.getFullName())
-        .profilePicture(user.getProfilePicture())
-        .isActive(user.getIsActive())
-        .isVerified(user.getIsVerified())
-        .createdAt(user.getCreatedAt())
-        .build();
-  }
-
-  public static User toEntity(UserDTO userDTO) {
-    if (userDTO == null)
-      return null;
+    }
 
     User user = new User();
-    user.setId(userDTO.getId());
-    user.setUsername(userDTO.getUsername());
-    user.setEmail(userDTO.getEmail());
-    user.setFullName(userDTO.getFullName());
-    user.setProfilePicture(userDTO.getProfilePicture());
-    user.setIsActive(userDTO.getIsActive());
-    user.setIsVerified(user.getIsVerified());
+    user.setUsername(userRequestDTO.getUsername());
+    user.setEmail(userRequestDTO.getEmail());
+    user.setPassword(userRequestDTO.getPassword()); // Will be encoded in service
+    user.setFullName(userRequestDTO.getFullName());
+    user.setBio(userRequestDTO.getBio());
+    user.setWebsite(userRequestDTO.getWebsite());
+    user.setPhoneNumber(userRequestDTO.getPhoneNumber());
+    user.setIsPrivate(userRequestDTO.getIsPrivate());
+
     return user;
   }
 
-  // Phương thức cập nhật từ DTO (dùng cho update)
-  public static void updateEntityFromDTO(UserUpdateDTO dto, User user) {
-    if (dto.getFullName() != null)
-      user.setFullName(dto.getFullName());
-    if (dto.getBio() != null)
-      user.setBio(dto.getBio());
-    if (dto.getWebsite() != null)
-      user.setWebsite(dto.getWebsite());
-    if (dto.getPhoneNumber() != null)
-      user.setPhoneNumber(dto.getPhoneNumber());
-    if (dto.getIsPrivate() != null)
-      user.setIsPrivate(dto.getIsPrivate());
+  public UserResponseDTO toResponseDTO(User user) {
+    if (user == null) {
+      return null;
+    }
+
+    UserResponseDTO userResponseDTO = new UserResponseDTO();
+    userResponseDTO.setId(user.getId());
+    userResponseDTO.setUsername(user.getUsername());
+    userResponseDTO.setEmail(user.getEmail());
+    userResponseDTO.setFullName(user.getFullName());
+    userResponseDTO.setBio(user.getBio());
+    userResponseDTO.setProfilePicture(user.getProfilePicture());
+    userResponseDTO.setWebsite(user.getWebsite());
+    userResponseDTO.setPhoneNumber(user.getPhoneNumber());
+    userResponseDTO.setIsPrivate(user.getIsPrivate());
+    userResponseDTO.setIsVerified(user.getIsVerified());
+    userResponseDTO.setIsActive(user.getIsActive());
+    userResponseDTO.setPostCount(user.getPostCount());
+    userResponseDTO.setFollowerCount(user.getFollowerCount());
+    userResponseDTO.setFollowingCount(user.getFollowingCount());
+    userResponseDTO.setCreatedAt(user.getCreatedAt());
+    userResponseDTO.setUpdatedAt(user.getUpdatedAt());
+
+    return userResponseDTO;
+  }
+
+  public void updateEntityFromDTO(UserUpdateRequestDTO userUpdateDTO, User user) {
+    if (userUpdateDTO == null || user == null) {
+      return;
+    }
+
+    if (userUpdateDTO.getUsername() != null) {
+      user.setUsername(userUpdateDTO.getUsername());
+    }
+    if (userUpdateDTO.getFullName() != null) {
+      user.setFullName(userUpdateDTO.getFullName());
+    }
+    if (userUpdateDTO.getBio() != null) {
+      user.setBio(userUpdateDTO.getBio());
+    }
+    if (userUpdateDTO.getWebsite() != null) {
+      user.setWebsite(userUpdateDTO.getWebsite());
+    }
+    if (userUpdateDTO.getPhoneNumber() != null) {
+      user.setPhoneNumber(userUpdateDTO.getPhoneNumber());
+    }
+    if (userUpdateDTO.getIsPrivate() != null) {
+      user.setIsPrivate(userUpdateDTO.getIsPrivate());
+    }
   }
 }

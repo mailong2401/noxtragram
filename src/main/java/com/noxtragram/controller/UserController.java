@@ -1,492 +1,243 @@
 package com.noxtragram.controller;
 
-import com.noxtragram.model.dto.user.*;
-import com.noxtragram.model.entity.User;
+import com.noxtragram.model.dto.request.*;
+import com.noxtragram.model.dto.response.UserResponseDTO;
+import com.noxtragram.model.dto.response.LoginResponseDTO;
 import com.noxtragram.service.UserService;
-import com.noxtragram.exception.DuplicateResourceException;
-import com.noxtragram.exception.OperationNotAllowedException;
-import com.noxtragram.exception.ResourceNotFoundException;
-
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
-@CrossOrigin(origins = "*")
 public class UserController {
 
+  private final UserService userService;
+
   @Autowired
-  private UserService userService;
-
-  // 👤 GET USER PROFILE
-
-  /**
-   * Lấy thông tin user bằng ID
-   */
-  @GetMapping("/{userId}")
-  public ResponseEntity<UserDTO> getUserById(@PathVariable Long userId) {
-    try {
-      UserDTO userDTO = userService.findById(userId);
-      return ResponseEntity.ok(userDTO);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+  public UserController(UserService userService) {
+    this.userService = userService;
   }
 
-  /**
-   * Lấy thông tin user bằng username
-   */
-  @GetMapping("/username/{username}")
-  public ResponseEntity<UserDTO> getUserByUsername(@PathVariable String username) {
-    try {
-      UserDTO userDTO = userService.findByUsername(username);
-      return ResponseEntity.ok(userDTO);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
-  }
+  // 🔐 AUTHENTICATION ENDPOINTS
 
-  /**
-   * Lấy thông tin user bằng email
-   */
-  @GetMapping("/email/{email}")
-  public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {
-    try {
-      UserDTO userDTO = userService.findByEmail(email);
-      return ResponseEntity.ok(userDTO);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
-  }
-
-  // 📋 GET MULTIPLE USERS
-
-  /**
-   * Lấy tất cả user active
-   */
-  @GetMapping
-  public ResponseEntity<List<UserDTO>> getAllActiveUsers() {
-    try {
-      List<UserDTO> users = userService.findAllActiveUsers();
-      return ResponseEntity.ok(users);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
-  }
-
-  // ➕ CREATE USER (REGISTRATION)
-
-  /**
-   * Đăng ký user mới
-   */
   @PostMapping("/register")
-  public ResponseEntity<?> registerUser(@Valid @RequestBody User user) {
-    try {
-      UserDTO createdUser = userService.createUser(user);
-      return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-    } catch (DuplicateResourceException e) {
-      return ResponseEntity.status(HttpStatus.CONFLICT).body(
-          Map.of("error", e.getMessage()));
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-          Map.of("error", "Something went wrong"));
-    }
+  public ResponseEntity<UserResponseDTO> register(@Valid @RequestBody UserRequestDTO userRequestDTO) {
+    UserResponseDTO userResponseDTO = userService.register(userRequestDTO);
+    return ResponseEntity.ok(userResponseDTO);
   }
 
-  // ✏️ UPDATE USER PROFILE
+  @PostMapping("/login")
+  public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
+    LoginResponseDTO loginResponseDTO = userService.login(loginRequestDTO);
+    return ResponseEntity.ok(loginResponseDTO);
+  }
 
-  /**
-   * Cập nhật thông tin user
-   */
+  // 👤 USER PROFILE ENDPOINTS
+
+  @GetMapping("/me")
+  public ResponseEntity<UserResponseDTO> getCurrentUser(@RequestParam Long userId) {
+    UserResponseDTO userResponseDTO = userService.getCurrentUser(userId);
+    return ResponseEntity.ok(userResponseDTO);
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
+    UserResponseDTO userResponseDTO = userService.getUserById(id);
+    return ResponseEntity.ok(userResponseDTO);
+  }
+
+  @GetMapping("/email/{email}")
+  public ResponseEntity<UserResponseDTO> getUserByEmail(@PathVariable String email) {
+    UserResponseDTO userResponseDTO = userService.getUserByEmail(email);
+    return ResponseEntity.ok(userResponseDTO);
+  }
+
+  @GetMapping("/username/{username}")
+  public ResponseEntity<UserResponseDTO> getUserByUsername(@PathVariable String username) {
+    UserResponseDTO userResponseDTO = userService.getUserByUsername(username);
+    return ResponseEntity.ok(userResponseDTO);
+  }
+
   @PutMapping("/{userId}")
-  public ResponseEntity<UserDTO> updateUserProfile(
+  public ResponseEntity<UserResponseDTO> updateUser(
       @PathVariable Long userId,
-      @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
-    try {
-      UserDTO updatedUser = userService.updateUser(userId, userUpdateDTO);
-      return ResponseEntity.ok(updatedUser);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+      @Valid @RequestBody UserUpdateRequestDTO userUpdateDTO) {
+    UserResponseDTO userResponseDTO = userService.updateUser(userId, userUpdateDTO);
+    return ResponseEntity.ok(userResponseDTO);
   }
 
-  // 🗑️ DELETE USER (SOFT DELETE)
-
-  /**
-   * Xóa user (soft delete)
-   */
   @DeleteMapping("/{userId}")
   public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
-    try {
-      userService.deleteUser(userId);
-      return ResponseEntity.noContent().build();
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+    userService.deleteUser(userId);
+    return ResponseEntity.ok().build();
   }
 
-  // 🔐 AUTHENTICATION & PASSWORD
+  // 🔐 PASSWORD MANAGEMENT
 
-  /**
-   * Đăng nhập user
-   */
-  @PostMapping("/login")
-  public ResponseEntity<User> loginUser(@RequestBody Map<String, String> credentials) {
-    try {
-      String email = credentials.get("email");
-      String password = credentials.get("password");
-
-      User authenticatedUser = userService.authenticateUser(email, password);
-      return ResponseEntity.ok(authenticatedUser);
-    } catch (OperationNotAllowedException | ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
-  }
-
-  /**
-   * Thay đổi password
-   */
-  @PostMapping("/{userId}/change-password")
+  @PutMapping("/{userId}/password")
   public ResponseEntity<Void> changePassword(
       @PathVariable Long userId,
-      @RequestBody Map<String, String> passwords) {
-    try {
-      String currentPassword = passwords.get("currentPassword");
-      String newPassword = passwords.get("newPassword");
-
-      userService.changePassword(userId, currentPassword, newPassword);
-      return ResponseEntity.ok().build();
-    } catch (OperationNotAllowedException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+      @Valid @RequestBody PasswordChangeRequestDTO passwordChangeDTO) {
+    userService.changePassword(userId, passwordChangeDTO);
+    return ResponseEntity.ok().build();
   }
 
-  /**
-   * Reset password (quên mật khẩu)
-   */
   @PostMapping("/reset-password")
-  public ResponseEntity<Void> resetPassword(@RequestBody Map<String, String> request) {
-    try {
-      String email = request.get("email");
-      String newPassword = request.get("newPassword");
-
-      userService.resetPassword(email, newPassword);
-      return ResponseEntity.ok().build();
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+  public ResponseEntity<Void> resetPassword(@Valid @RequestBody PasswordResetRequestDTO passwordResetDTO) {
+    userService.resetPassword(passwordResetDTO);
+    return ResponseEntity.ok().build();
   }
 
-  // 📸 PROFILE PICTURE MANAGEMENT
+  // 📸 PROFILE PICTURE
 
-  /**
-   * Upload profile picture
-   */
   @PostMapping("/{userId}/profile-picture")
-  public ResponseEntity<UserDTO> uploadProfilePicture(
+  public ResponseEntity<UserResponseDTO> uploadProfilePicture(
       @PathVariable Long userId,
       @RequestParam("file") MultipartFile file) {
-    try {
-      UserDTO updatedUser = userService.uploadProfilePicture(userId, file);
-      return ResponseEntity.ok(updatedUser);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+    UserResponseDTO userResponseDTO = userService.uploadProfilePicture(userId, file);
+    return ResponseEntity.ok(userResponseDTO);
   }
 
-  /**
-   * Xóa profile picture
-   */
   @DeleteMapping("/{userId}/profile-picture")
-  public ResponseEntity<UserDTO> removeProfilePicture(@PathVariable Long userId) {
-    try {
-      UserDTO updatedUser = userService.removeProfilePicture(userId);
-      return ResponseEntity.ok(updatedUser);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+  public ResponseEntity<UserResponseDTO> removeProfilePicture(@PathVariable Long userId) {
+    UserResponseDTO userResponseDTO = userService.removeProfilePicture(userId);
+    return ResponseEntity.ok(userResponseDTO);
   }
 
   // 👥 FOLLOW SYSTEM
 
-  /**
-   * Follow một user
-   */
   @PostMapping("/{followerId}/follow/{followingId}")
   public ResponseEntity<Void> followUser(
       @PathVariable Long followerId,
       @PathVariable Long followingId) {
-    try {
-      userService.followUser(followerId, followingId);
-      return ResponseEntity.ok().build();
-    } catch (OperationNotAllowedException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+    userService.followUser(followerId, followingId);
+    return ResponseEntity.ok().build();
   }
 
-  /**
-   * Unfollow một user
-   */
   @PostMapping("/{followerId}/unfollow/{followingId}")
   public ResponseEntity<Void> unfollowUser(
       @PathVariable Long followerId,
       @PathVariable Long followingId) {
-    try {
-      userService.unfollowUser(followerId, followingId);
-      return ResponseEntity.ok().build();
-    } catch (OperationNotAllowedException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+    userService.unfollowUser(followerId, followingId);
+    return ResponseEntity.ok().build();
   }
 
-  /**
-   * Kiểm tra user A có follow user B không
-   */
   @GetMapping("/{userId}/is-following/{targetUserId}")
   public ResponseEntity<Boolean> isFollowing(
       @PathVariable Long userId,
       @PathVariable Long targetUserId) {
-    try {
-      boolean isFollowing = userService.isFollowing(userId, targetUserId);
-      return ResponseEntity.ok(isFollowing);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+    boolean isFollowing = userService.isFollowing(userId, targetUserId);
+    return ResponseEntity.ok(isFollowing);
   }
 
-  /**
-   * Lấy danh sách followers của user
-   */
   @GetMapping("/{userId}/followers")
-  public ResponseEntity<List<UserDTO>> getFollowers(@PathVariable Long userId) {
-    try {
-      List<UserDTO> followers = userService.getFollowers(userId);
-      return ResponseEntity.ok(followers);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+  public ResponseEntity<List<UserResponseDTO>> getFollowers(@PathVariable Long userId) {
+    List<UserResponseDTO> followers = userService.getFollowers(userId);
+    return ResponseEntity.ok(followers);
   }
 
-  /**
-   * Lấy danh sách following của user
-   */
   @GetMapping("/{userId}/following")
-  public ResponseEntity<List<UserDTO>> getFollowing(@PathVariable Long userId) {
-    try {
-      List<UserDTO> following = userService.getFollowing(userId);
-      return ResponseEntity.ok(following);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+  public ResponseEntity<List<UserResponseDTO>> getFollowing(@PathVariable Long userId) {
+    List<UserResponseDTO> following = userService.getFollowing(userId);
+    return ResponseEntity.ok(following);
   }
 
-  /**
-   * Lấy số lượng followers và following
-   */
-  @GetMapping("/{userId}/follow-stats")
-  public ResponseEntity<Map<String, Integer>> getFollowStats(@PathVariable Long userId) {
-    try {
-      Integer followerCount = userService.getFollowerCount(userId);
-      Integer followingCount = userService.getFollowingCount(userId);
-
-      return ResponseEntity.ok(Map.of(
-          "followerCount", followerCount,
-          "followingCount", followingCount));
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+  @GetMapping("/{userId}/follower-count")
+  public ResponseEntity<Integer> getFollowerCount(@PathVariable Long userId) {
+    Integer count = userService.getFollowerCount(userId);
+    return ResponseEntity.ok(count);
   }
 
-  // 🔍 SEARCH USERS
+  @GetMapping("/{userId}/following-count")
+  public ResponseEntity<Integer> getFollowingCount(@PathVariable Long userId) {
+    Integer count = userService.getFollowingCount(userId);
+    return ResponseEntity.ok(count);
+  }
 
-  /**
-   * Tìm kiếm user theo keyword (username hoặc full name)
-   */
+  // 🔍 SEARCH
+
   @GetMapping("/search")
-  public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam String keyword) {
-    try {
-      List<UserDTO> users = userService.searchUsers(keyword);
-      return ResponseEntity.ok(users);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+  public ResponseEntity<List<UserResponseDTO>> searchUsers(@RequestParam String keyword) {
+    List<UserResponseDTO> users = userService.searchUsers(keyword);
+    return ResponseEntity.ok(users);
   }
 
-  /**
-   * Tìm kiếm user theo username
-   */
   @GetMapping("/search/username")
-  public ResponseEntity<List<UserDTO>> searchByUsername(@RequestParam String username) {
-    try {
-      List<UserDTO> users = userService.searchByUsername(username);
-      return ResponseEntity.ok(users);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+  public ResponseEntity<List<UserResponseDTO>> searchByUsername(@RequestParam String username) {
+    List<UserResponseDTO> users = userService.searchByUsername(username);
+    return ResponseEntity.ok(users);
   }
 
-  /**
-   * Tìm kiếm user theo full name
-   */
   @GetMapping("/search/fullname")
-  public ResponseEntity<List<UserDTO>> searchByFullName(@RequestParam String fullName) {
-    try {
-      List<UserDTO> users = userService.searchByFullName(fullName);
-      return ResponseEntity.ok(users);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+  public ResponseEntity<List<UserResponseDTO>> searchByFullName(@RequestParam String fullName) {
+    List<UserResponseDTO> users = userService.searchByFullName(fullName);
+    return ResponseEntity.ok(users);
   }
 
-  // 💡 SUGGESTED USERS
+  // 💡 SUGGESTIONS
 
-  /**
-   * Lấy suggested users để follow
-   */
   @GetMapping("/{userId}/suggestions")
-  public ResponseEntity<List<UserDTO>> getSuggestedUsers(
+  public ResponseEntity<List<UserResponseDTO>> getSuggestedUsers(
       @PathVariable Long userId,
       @RequestParam(defaultValue = "10") int limit) {
-    try {
-      List<UserDTO> suggestedUsers = userService.getSuggestedUsers(userId, limit);
-      return ResponseEntity.ok(suggestedUsers);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+    List<UserResponseDTO> suggestions = userService.getSuggestedUsers(userId, limit);
+    return ResponseEntity.ok(suggestions);
+  }
+
+  // 👑 ADMIN ENDPOINTS
+
+  @PostMapping("/{userId}/verify")
+  public ResponseEntity<UserResponseDTO> verifyUser(@PathVariable Long userId) {
+    UserResponseDTO userResponseDTO = userService.verifyUser(userId);
+    return ResponseEntity.ok(userResponseDTO);
+  }
+
+  @PostMapping("/{userId}/unverify")
+  public ResponseEntity<UserResponseDTO> unverifyUser(@PathVariable Long userId) {
+    UserResponseDTO userResponseDTO = userService.unverifyUser(userId);
+    return ResponseEntity.ok(userResponseDTO);
+  }
+
+  @PostMapping("/{userId}/deactivate")
+  public ResponseEntity<UserResponseDTO> deactivateUser(@PathVariable Long userId) {
+    UserResponseDTO userResponseDTO = userService.deactivateUser(userId);
+    return ResponseEntity.ok(userResponseDTO);
+  }
+
+  @PostMapping("/{userId}/reactivate")
+  public ResponseEntity<UserResponseDTO> reactivateUser(@PathVariable Long userId) {
+    UserResponseDTO userResponseDTO = userService.reactivateUser(userId);
+    return ResponseEntity.ok(userResponseDTO);
   }
 
   // 🔧 UTILITY ENDPOINTS
 
-  /**
-   * Kiểm tra email đã tồn tại
-   */
-  @GetMapping("/check-email/{email}")
-  public ResponseEntity<Boolean> checkEmailExists(@PathVariable String email) {
-    try {
-      boolean exists = userService.emailExists(email);
-      return ResponseEntity.ok(exists);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+  @GetMapping("/check-email")
+  public ResponseEntity<Boolean> checkEmailExists(@RequestParam String email) {
+    boolean exists = userService.emailExists(email);
+    return ResponseEntity.ok(exists);
   }
 
-  /**
-   * Kiểm tra username đã tồn tại
-   */
-  @GetMapping("/check-username/{username}")
-  public ResponseEntity<Boolean> checkUsernameExists(@PathVariable String username) {
-    try {
-      boolean exists = userService.usernameExists(username);
-      return ResponseEntity.ok(exists);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+  @GetMapping("/check-username")
+  public ResponseEntity<Boolean> checkUsernameExists(@RequestParam String username) {
+    boolean exists = userService.usernameExists(username);
+    return ResponseEntity.ok(exists);
   }
 
-  /**
-   * Lấy tổng số user active
-   */
-  @GetMapping("/stats/total-active")
+  @GetMapping("/stats/active-count")
   public ResponseEntity<Long> getTotalActiveUsers() {
-    try {
-      long total = userService.getTotalActiveUsers();
-      return ResponseEntity.ok(total);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+    long count = userService.getTotalActiveUsers();
+    return ResponseEntity.ok(count);
   }
 
-  // 🎯 ADMIN OPERATIONS
-
-  /**
-   * Verify user (admin only)
-   */
-  @PostMapping("/{userId}/verify")
-  public ResponseEntity<UserDTO> verifyUser(@PathVariable Long userId) {
-    try {
-      UserDTO verifiedUser = userService.verifyUser(userId);
-      return ResponseEntity.ok(verifiedUser);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
-  }
-
-  /**
-   * Deactivate user (admin only)
-   */
-  @PostMapping("/{userId}/deactivate")
-  public ResponseEntity<UserDTO> deactivateUser(@PathVariable Long userId) {
-    try {
-      UserDTO deactivatedUser = userService.deactivateUser(userId);
-      return ResponseEntity.ok(deactivatedUser);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
-  }
-
-  /**
-   * Reactivate user (admin only)
-   */
-  @PostMapping("/{userId}/reactivate")
-  public ResponseEntity<UserDTO> reactivateUser(@PathVariable Long userId) {
-    try {
-      UserDTO reactivatedUser = userService.reactivateUser(userId);
-      return ResponseEntity.ok(reactivatedUser);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+  @GetMapping("/active")
+  public ResponseEntity<List<UserResponseDTO>> getAllActiveUsers() {
+    List<UserResponseDTO> users = userService.getAllActiveUsers();
+    return ResponseEntity.ok(users);
   }
 }
