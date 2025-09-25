@@ -107,3 +107,6 @@ docker-compose.override.yml
 k8s/
 *.yaml
 *.yml
+
+# Nhưng không ignore application.yml
+!application.example.yml
