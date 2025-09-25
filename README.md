@@ -1,70 +1,168 @@
-# Getting Started with Create React App
+# Noxtragram - Mạng xã hội chia sẻ hình ảnh
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![Noxtragram](https://img.shields.io/badge/Noxtragram-Social%20Network-purple?style=for-the-badge)
+![React](https://img.shields.io/badge/React-19.1.1-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-0.1.0-green?style=for-the-badge)
 
-## Available Scripts
+Noxtragram là một mạng xã hội chia sẻ hình ảnh hiện đại, lấy cảm hứng từ Instagram, được xây dựng với ReactJS và Spring Boot.
 
-In the project directory, you can run:
+## ✨ Tính năng chính
 
-### `npm start`
+### 📱 Người dùng
+- ✅ Đăng ký và đăng nhập tài khoản
+- ✅ Chia sẻ hình ảnh và video
+- ✅ Like, comment và lưu bài viết
+- ✅ Theo dõi người dùng khác
+- ✅ Tìm kiếm và khám phá nội dung
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 🏷️ Hashtag & Khám phá
+- ✅ Tìm kiếm bài viết theo hashtag
+- ✅ Hashtag trending và phổ biến
+- ✅ Khám phá nội dung mới
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 💬 Tương tác xã hội
+- ✅ Tin nhắn trực tiếp (DM)
+- ✅ Thông báo thời gian thực
+- ✅ Tương tác với bài viết
 
-### `npm test`
+## 🚀 Bắt đầu
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Yêu cầu hệ thống
+- Node.js 16.0.0 hoặc cao hơn
+- npm hoặc yarn
+- Backend Noxtragram (Spring Boot)
 
-### `npm run build`
+### Cài đặt
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Clone repository**
+```bash
+git clone <repository-url>
+cd noxtragram-web
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. **Cài đặt dependencies**
+```bash
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. **Cấu hình environment**
+Tạo file `.env` trong thư mục gốc:
+```env
+REACT_APP_API_BASE_URL=http://localhost:8080/api
+REACT_APP_APP_NAME=Noxtragram
+REACT_APP_VERSION=0.1.0
+```
 
-### `npm run eject`
+4. **Chạy ứng dụng**
+```bash
+# Development mode
+npm start
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# Production build
+npm run build
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# Run tests
+npm test
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 📁 Cấu trúc dự án
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```
+src/
+├── components/          # Components tái sử dụng
+│   ├── common/         # Components chung
+│   ├── layout/         # Layout components
+│   └── ui/             # UI components
+├── pages/              # Các trang chính
+│   ├── Auth/           # Đăng nhập/đăng ký
+│   ├── Home/           # Trang chủ (Feed)
+│   ├── Profile/        # Trang cá nhân
+│   ├── Explore/        # Khám phá
+│   ├── Messages/       # Tin nhắn
+│   └── Notifications/  # Thông báo
+├── services/           # API services
+├── hooks/              # Custom hooks
+├── contexts/           # React contexts
+├── utils/              # Utilities
+└── assets/             # Tài nguyên tĩnh
+```
 
-## Learn More
+## 🛠️ Công nghệ sử dụng
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Frontend
+- **React 19.1.1** - Thư viện UI chính
+- **React Router** - Điều hướng trang
+- **Axios** - HTTP client
+- **Heroicons** - Icon library
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Development Tools
+- **Create React App** - Boilerplate
+- **Jest & Testing Library** - Testing
+- **ESLint** - Code linting
 
-### Code Splitting
+## 🌐 API Endpoints
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Ứng dụng kết nối với backend thông qua các endpoints:
 
-### Analyzing the Bundle Size
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/api/posts` | Lấy danh sách bài viết |
+| POST | `/api/posts` | Tạo bài viết mới |
+| GET | `/api/users/me` | Thông tin user hiện tại |
+| GET | `/api/hashtags/{name}` | Thông tin hashtag |
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🎨 UI/UX Features
 
-### Making a Progressive Web App
+- **Responsive Design** - Tương thích mọi thiết bị
+- **Modern Interface** - Giao diện hiện đại, clean
+- **Dark/Light Mode** - Hỗ trợ chế độ sáng/tối
+- **Smooth Animations** - Hiệu ứng mượt mà
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 📱 Tính năng đang phát triển
 
-### Advanced Configuration
+- [ ] Stories (24h)
+- [ ] Reels (video ngắn)
+- [ ] Live Streaming
+- [ ] Shopping Integration
+- [ ] Advanced Analytics
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## 🤝 Đóng góp
 
-### Deployment
+Chúng tôi hoan nghênh mọi đóng góp! Hãy:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+1. Fork repository
+2. Tạo feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-### `npm run build` fails to minify
+## 📄 License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Dự án được phân phối under the MIT License. Xem file `LICENSE` để biết thêm chi tiết.
+
+## 👥 Đội ngũ phát triển
+
+- **Long Nguyen** - Full-stack Developer
+- *Thêm thành viên...*
+
+## 📞 Liên hệ
+
+- Email: contact@noxtragram.com
+- Website: https://noxtragram.com
+- Documentation: [API Docs](./docs/api.md)
+
+## 🙏 Acknowledgements
+
+- Instagram - Nguồn cảm hứng thiết kế
+- React Team - Framework tuyệt vời
+- Spring Boot Team - Backend robust
+
+---
+
+**Made with ❤️ for the Noxtragram community**
+
+<div align="center">
+
+### ⭐ Đừng quên star repository nếu bạn thấy dự án hữu ích!
+
+</div>
