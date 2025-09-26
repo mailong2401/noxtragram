@@ -5,6 +5,7 @@ import Login from './pages/Auth/Login/Login';
 import Register from './pages/Auth/Register/Register';
 import Home from './pages/Home/Home';
 import Profile from './pages/Profile/Profile'; // ✅ đổi tên
+import Message from './pages/Messages/Messages'
 import './App.css';
 
 // Protected Route Component
@@ -36,6 +37,7 @@ function App() {
 
             <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/message" element={<ProtectedRoute><Message /></ProtectedRoute>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

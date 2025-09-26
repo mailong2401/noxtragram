@@ -1,3 +1,4 @@
+// contexts/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authService } from '../services/authService';
 
@@ -38,15 +39,15 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setError('');
-      const userData = await authService.login(credentials);
+      const response = await authService.login(credentials);
       
-      // Lưu thông tin đăng nhập
-      authService.setAuthData(userData.token, userData);
-      setUser(userData);
+      // Backend trả về { token, user } 
+      authService.setAuthData(response.token, response);
+      setUser(response.user || response); // Tùy thuộc vào structure response
       
-      return { success: true, data: userData };
+      return { success: true, data: response };
     } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Đăng nhập thất bại';
+      const errorMessage = error.response?.data?.message || error.message || 'Đăng nhập thất bại';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -65,7 +66,7 @@ export const AuthProvider = ({ children }) => {
       
       return loginResult;
     } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Đăng ký thất bại';
+      const errorMessage = error.response?.data?.message || error.message || 'Đăng ký thất bại';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -81,11 +82,18 @@ export const AuthProvider = ({ children }) => {
     setError('');
   };
 
+  const updateUser = (userData) => {
+    setUser(userData);
+    // Cập nhật localStorage nếu cần
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
   const value = {
     user,
     login,
     register,
     logout,
+    updateUser,
     loading,
     error,
     clearError,

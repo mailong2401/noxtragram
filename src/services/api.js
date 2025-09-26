@@ -1,3 +1,4 @@
+// services/api.js
 import axios from 'axios';
 
 // Tạo instance axios với config mặc định
@@ -12,7 +13,7 @@ const apiClient = axios.create({
 // Interceptor để thêm token vào header
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,7 +29,9 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
+      // Token hết hạn hoặc không hợp lệ
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       localStorage.removeItem('userId');
       window.location.href = '/login';
     }
@@ -43,8 +46,5 @@ const createFormData = (file) => {
   return formData;
 };
 
-// Export named exports
 export { apiClient, createFormData };
-
-// Export default nếu cần
 export default apiClient;
