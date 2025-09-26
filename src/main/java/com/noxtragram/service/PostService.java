@@ -4,12 +4,13 @@ import com.noxtragram.model.dto.request.PostRequestDTO;
 import com.noxtragram.model.dto.response.PostResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface PostService {
 
-  PostResponseDTO createPost(PostRequestDTO postRequest, Long userId);
+  PostResponseDTO createPost(PostRequestDTO postRequest, List<MultipartFile> files, Long userId);
 
   PostResponseDTO getPostById(Long postId, Long currentUserId);
 

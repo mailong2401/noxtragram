@@ -2,16 +2,19 @@ package com.noxtragram.service.implementation;
 
 import com.noxtragram.model.dto.request.PostRequestDTO;
 import com.noxtragram.model.dto.response.PostResponseDTO;
-import com.noxtragram.model.dto.Summary.*;
+import com.noxtragram.model.dto.Summary.UserSummaryDTO;
 import com.noxtragram.model.entity.*;
 import com.noxtragram.repository.*;
+import com.noxtragram.service.FileStorageService;
 import com.noxtragram.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,32 +27,51 @@ public class PostServiceImpl implements PostService {
   private final HashtagRepository hashtagRepository;
   private final LikeRepository likeRepository;
   private final PostSaveRepository postSaveRepository;
+  private final FileStorageService fileStorageService;
 
   public PostServiceImpl(PostRepository postRepository, UserRepository userRepository,
       HashtagRepository hashtagRepository, LikeRepository likeRepository,
-      PostSaveRepository postSaveRepository) {
+      PostSaveRepository postSaveRepository, FileStorageService fileStorageService) {
     this.postRepository = postRepository;
     this.userRepository = userRepository;
     this.hashtagRepository = hashtagRepository;
     this.likeRepository = likeRepository;
     this.postSaveRepository = postSaveRepository;
+    this.fileStorageService = fileStorageService;
   }
 
   @Override
-  public PostResponseDTO createPost(PostRequestDTO postRequest, Long userId) {
+  public PostResponseDTO createPost(PostRequestDTO postRequest, List<MultipartFile> files, Long userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
     Post post = new Post();
     post.setCaption(postRequest.getCaption());
     post.setUser(user);
-    post.setImageUrl(postRequest.getImageUrl());
-    post.setImageUrls(postRequest.getImageUrls());
-    post.setVideoUrl(postRequest.getVideoUrl());
     post.setLocation(postRequest.getLocation());
 
+    // Xử lý upload files
+    if (files != null && !files.isEmpty()) {
+      List<String> imageUrls = new ArrayList<>();
+
+      for (MultipartFile file : files) {
+        try {
+          String fileName = fileStorageService.storeFile(file, "posts");
+          String fileUrl = fileStorageService.getFileUrl(fileName, "posts");
+          imageUrls.add(fileUrl);
+        } catch (Exception e) {
+          throw new RuntimeException("Failed to store file: " + e.getMessage());
+        }
+      }
+
+      if (imageUrls.size() == 1) {
+        post.setImageUrl(imageUrls.get(0));
+      }
+      post.setImageUrls(imageUrls);
+    }
+
     // Xử lý hashtags
-    if (postRequest.getHashtags() != null) {
+    if (postRequest.getHashtags() != null && !postRequest.getHashtags().isEmpty()) {
       List<Hashtag> hashtags = processHashtags(postRequest.getHashtags());
       post.setHashtags(hashtags);
     }
@@ -79,8 +101,8 @@ public class PostServiceImpl implements PostService {
   @Override
   @Transactional(readOnly = true)
   public Page<PostResponseDTO> getFeedPosts(Long currentUserId, Pageable pageable) {
-    // Ở đây có thể implement logic feed phức tạp hơn (theo followers, interests,
-    // etc.)
+    // Simple feed implementation - show posts from all users
+    // Can be enhanced to show posts from followed users only
     Page<Post> posts = postRepository.findByIsDeletedFalseOrderByCreatedAtDesc(pageable);
     return posts.map(post -> convertToDTO(post, currentUserId));
   }
@@ -88,7 +110,8 @@ public class PostServiceImpl implements PostService {
   @Override
   @Transactional(readOnly = true)
   public Page<PostResponseDTO> getPostsByHashtag(String hashtag, Long currentUserId, Pageable pageable) {
-    Page<Post> posts = postRepository.findByHashtag(hashtag, pageable);
+    String cleanedHashtag = hashtag.startsWith("#") ? hashtag.substring(1) : hashtag;
+    Page<Post> posts = postRepository.findByHashtagName(cleanedHashtag, pageable);
     return posts.map(post -> convertToDTO(post, currentUserId));
   }
 
@@ -111,14 +134,14 @@ public class PostServiceImpl implements PostService {
     Post post = postRepository.findByIdAndIsDeletedFalse(postId)
         .orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
-    if (!post.isOwnedBy(userRepository.findById(userId).get())) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+    if (!post.getUser().getId().equals(userId)) {
       throw new SecurityException("You are not authorized to update this post");
     }
 
     post.setCaption(postRequest.getCaption());
-    post.setImageUrl(postRequest.getImageUrl());
-    post.setImageUrls(postRequest.getImageUrls());
-    post.setVideoUrl(postRequest.getVideoUrl());
     post.setLocation(postRequest.getLocation());
 
     // Cập nhật hashtags
@@ -136,7 +159,7 @@ public class PostServiceImpl implements PostService {
     Post post = postRepository.findByIdAndIsDeletedFalse(postId)
         .orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
-    if (!post.isOwnedBy(userRepository.findById(userId).get())) {
+    if (!post.getUser().getId().equals(userId)) {
       throw new SecurityException("You are not authorized to delete this post");
     }
 
@@ -151,7 +174,6 @@ public class PostServiceImpl implements PostService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-    // Kiểm tra đã like chưa
     if (likeRepository.existsByPostAndUser(post, user)) {
       throw new IllegalStateException("Post already liked by user");
     }
@@ -161,7 +183,7 @@ public class PostServiceImpl implements PostService {
     like.setUser(user);
     likeRepository.save(like);
 
-    post.incrementLikeCount();
+    post.setLikeCount(post.getLikeCount() + 1);
     postRepository.save(post);
   }
 
@@ -177,7 +199,7 @@ public class PostServiceImpl implements PostService {
 
     likeRepository.delete(like);
 
-    post.decrementLikeCount();
+    post.setLikeCount(Math.max(0, post.getLikeCount() - 1));
     postRepository.save(post);
   }
 
@@ -212,6 +234,7 @@ public class PostServiceImpl implements PostService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public boolean isPostLikedByUser(Long postId, Long userId) {
     Post post = postRepository.findByIdAndIsDeletedFalse(postId)
         .orElseThrow(() -> new EntityNotFoundException("Post not found"));
@@ -222,6 +245,7 @@ public class PostServiceImpl implements PostService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public boolean isPostSavedByUser(Long postId, Long userId) {
     Post post = postRepository.findByIdAndIsDeletedFalse(postId)
         .orElseThrow(() -> new EntityNotFoundException("Post not found"));
@@ -260,7 +284,7 @@ public class PostServiceImpl implements PostService {
     dto.setId(post.getId());
     dto.setCaption(post.getCaption());
     dto.setImageUrl(post.getImageUrl());
-    dto.setImageUrls(post.getImageUrls());
+    dto.setImageUrls(post.getImageUrls() != null ? post.getImageUrls() : new ArrayList<>());
     dto.setVideoUrl(post.getVideoUrl());
     dto.setLocation(post.getLocation());
     dto.setLikeCount(post.getLikeCount());
@@ -273,8 +297,16 @@ public class PostServiceImpl implements PostService {
 
     // Set interaction flags
     if (currentUserId != null) {
-      dto.setIsLikedByCurrentUser(isPostLikedByUser(post.getId(), currentUserId));
-      dto.setIsSavedByCurrentUser(isPostSavedByUser(post.getId(), currentUserId));
+      try {
+        dto.setIsLikedByCurrentUser(isPostLikedByUser(post.getId(), currentUserId));
+        dto.setIsSavedByCurrentUser(isPostSavedByUser(post.getId(), currentUserId));
+      } catch (Exception e) {
+        dto.setIsLikedByCurrentUser(false);
+        dto.setIsSavedByCurrentUser(false);
+      }
+    } else {
+      dto.setIsLikedByCurrentUser(false);
+      dto.setIsSavedByCurrentUser(false);
     }
 
     return dto;

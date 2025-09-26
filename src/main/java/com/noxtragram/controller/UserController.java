@@ -3,9 +3,11 @@ package com.noxtragram.controller;
 import com.noxtragram.model.dto.request.*;
 import com.noxtragram.model.dto.response.UserResponseDTO;
 import com.noxtragram.model.dto.response.LoginResponseDTO;
+import org.springframework.security.core.Authentication; // ✅ THÊM IMPORT NÀY
 import com.noxtragram.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,12 +39,29 @@ public class UserController {
     return ResponseEntity.ok(loginResponseDTO);
   }
 
-  // 👤 USER PROFILE ENDPOINTS
-
   @GetMapping("/me")
-  public ResponseEntity<UserResponseDTO> getCurrentUser(@RequestParam Long userId) {
-    UserResponseDTO userResponseDTO = userService.getCurrentUser(userId);
-    return ResponseEntity.ok(userResponseDTO);
+  public ResponseEntity<UserResponseDTO> getCurrentUser(Authentication authentication) {
+    try {
+      if (authentication == null || !authentication.isAuthenticated()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      }
+
+      // Lấy user details từ authentication
+      Object principal = authentication.getPrincipal();
+
+      if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+        String username = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+        UserResponseDTO userResponseDTO = userService.getUserByUsername(username);
+        return ResponseEntity.ok(userResponseDTO);
+      } else {
+        // Nếu principal là String (username)
+        String username = principal.toString();
+        UserResponseDTO userResponseDTO = userService.getUserByUsername(username);
+        return ResponseEntity.ok(userResponseDTO);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Error getting current user: " + e.getMessage());
+    }
   }
 
   @GetMapping("/{id}")

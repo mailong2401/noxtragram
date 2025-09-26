@@ -1,186 +1,299 @@
 package com.noxtragram.controller;
 
-import com.noxtragram.model.dto.response.*;
-import com.noxtragram.model.dto.request.*;
+import com.noxtragram.model.dto.request.PostRequestDTO;
+import com.noxtragram.model.dto.response.PostResponseDTO;
+import com.noxtragram.model.entity.User;
+import com.noxtragram.repository.UserRepository;
 import com.noxtragram.service.PostService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/api/posts")
+@CrossOrigin(origins = "http://localhost:3000") // ReactJS port
 public class PostController {
 
   private final PostService postService;
+
+  @Autowired
+  private UserRepository userRepository;
 
   public PostController(PostService postService) {
     this.postService = postService;
   }
 
-  @PostMapping
-  public ResponseEntity<PostResponseDTO> createPost(
-      @Valid @RequestBody PostRequestDTO postRequest,
-      @RequestAttribute Long userId) {
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<?> createPost(
+      @RequestPart(value = "caption", required = false) String caption,
+      @RequestPart(value = "location", required = false) String location,
+      @RequestPart(value = "hashtags", required = false) String hashtags,
+      @RequestPart(value = "files", required = false) List<MultipartFile> files,
+      Authentication authentication) {
 
-    PostResponseDTO createdPost = postService.createPost(postRequest, userId);
-    return ResponseEntity.ok(createdPost);
+    try {
+      if (authentication == null || !authentication.isAuthenticated()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      }
+
+      String username = authentication.getName();
+      User user = userRepository.findByUsername(username)
+          .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+      PostRequestDTO postRequest = new PostRequestDTO();
+      postRequest.setCaption(caption);
+      postRequest.setLocation(location);
+
+      if (hashtags != null && !hashtags.trim().isEmpty()) {
+        List<String> hashtagList = Arrays.stream(hashtags.split("\\s+"))
+            .filter(tag -> tag.startsWith("#"))
+            .collect(Collectors.toList());
+        postRequest.setHashtags(hashtagList);
+      }
+
+      PostResponseDTO createdPost = postService.createPost(postRequest, files, user.getId());
+      return ResponseEntity.ok(createdPost);
+    } catch (Exception e) {
+      Map<String, String> error = new HashMap<>();
+      error.put("error", "Failed to create post: " + e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
   }
 
   @GetMapping("/{postId}")
-  public ResponseEntity<PostResponseDTO> getPost(
-      @PathVariable Long postId,
-      @RequestAttribute Long userId) {
-
-    PostResponseDTO post = postService.getPostById(postId, userId);
-    return ResponseEntity.ok(post);
+  public ResponseEntity<?> getPost(@PathVariable Long postId, Authentication authentication) {
+    try {
+      Long userId = getUserIdFromAuthentication(authentication);
+      PostResponseDTO post = postService.getPostById(postId, userId);
+      return ResponseEntity.ok(post);
+    } catch (EntityNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to get post"));
+    }
   }
 
   @GetMapping("/user/{userId}")
-  public ResponseEntity<Page<PostResponseDTO>> getUserPosts(
+  public ResponseEntity<?> getUserPosts(
       @PathVariable Long userId,
-      @RequestAttribute Long currentUserId,
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
+      @RequestParam(defaultValue = "10") int size,
+      Authentication authentication) {
 
-    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<PostResponseDTO> posts = postService.getPostsByUserId(userId, currentUserId, pageable);
-    return ResponseEntity.ok(posts);
+    try {
+      Long currentUserId = getUserIdFromAuthentication(authentication);
+      Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+      Page<PostResponseDTO> posts = postService.getPostsByUserId(userId, currentUserId, pageable);
+      return ResponseEntity.ok(posts);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to get user posts"));
+    }
   }
 
   @GetMapping("/feed")
-  public ResponseEntity<Page<PostResponseDTO>> getFeed(
-      @RequestAttribute Long userId,
+  public ResponseEntity<?> getFeed(
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
+      @RequestParam(defaultValue = "10") int size,
+      Authentication authentication) {
 
-    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<PostResponseDTO> posts = postService.getFeedPosts(userId, pageable);
-    return ResponseEntity.ok(posts);
+    try {
+      Long userId = getUserIdFromAuthentication(authentication);
+      Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+      Page<PostResponseDTO> posts = postService.getFeedPosts(userId, pageable);
+      return ResponseEntity.ok(posts);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to get feed"));
+    }
   }
 
   @GetMapping("/hashtag/{hashtag}")
-  public ResponseEntity<Page<PostResponseDTO>> getPostsByHashtag(
+  public ResponseEntity<?> getPostsByHashtag(
       @PathVariable String hashtag,
-      @RequestAttribute Long userId,
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
+      @RequestParam(defaultValue = "10") int size,
+      Authentication authentication) {
 
-    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<PostResponseDTO> posts = postService.getPostsByHashtag(hashtag, userId, pageable);
-    return ResponseEntity.ok(posts);
+    try {
+      Long userId = getUserIdFromAuthentication(authentication);
+      Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+      Page<PostResponseDTO> posts = postService.getPostsByHashtag(hashtag, userId, pageable);
+      return ResponseEntity.ok(posts);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to get posts by hashtag"));
+    }
   }
 
   @GetMapping("/saved")
-  public ResponseEntity<Page<PostResponseDTO>> getSavedPosts(
-      @RequestAttribute Long userId,
+  public ResponseEntity<?> getSavedPosts(
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
+      @RequestParam(defaultValue = "10") int size,
+      Authentication authentication) {
 
-    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<PostResponseDTO> posts = postService.getSavedPosts(userId, userId, pageable);
-    return ResponseEntity.ok(posts);
+    try {
+      Long userId = getUserIdFromAuthentication(authentication);
+      Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+      Page<PostResponseDTO> posts = postService.getSavedPosts(userId, userId, pageable);
+      return ResponseEntity.ok(posts);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to get saved posts"));
+    }
   }
 
   @GetMapping("/popular")
-  public ResponseEntity<Page<PostResponseDTO>> getPopularPosts(
-      @RequestAttribute Long userId,
+  public ResponseEntity<?> getPopularPosts(
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
+      @RequestParam(defaultValue = "10") int size,
+      Authentication authentication) {
 
-    Pageable pageable = PageRequest.of(page, size, Sort.by("likeCount").descending());
-    Page<PostResponseDTO> posts = postService.getPopularPosts(userId, pageable);
-    return ResponseEntity.ok(posts);
+    try {
+      Long userId = getUserIdFromAuthentication(authentication);
+      Pageable pageable = PageRequest.of(page, size, Sort.by("likeCount").descending());
+      Page<PostResponseDTO> posts = postService.getPopularPosts(userId, pageable);
+      return ResponseEntity.ok(posts);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to get popular posts"));
+    }
   }
 
   @PutMapping("/{postId}")
-  public ResponseEntity<PostResponseDTO> updatePost(
+  public ResponseEntity<?> updatePost(
       @PathVariable Long postId,
       @Valid @RequestBody PostRequestDTO postRequest,
-      @RequestAttribute Long userId) {
+      Authentication authentication) {
 
-    PostResponseDTO updatedPost = postService.updatePost(postId, postRequest, userId);
-    return ResponseEntity.ok(updatedPost);
+    try {
+      Long userId = getUserIdFromAuthentication(authentication);
+      PostResponseDTO updatedPost = postService.updatePost(postId, postRequest, userId);
+      return ResponseEntity.ok(updatedPost);
+    } catch (SecurityException e) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+    } catch (EntityNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to update post"));
+    }
   }
 
   @DeleteMapping("/{postId}")
-  public ResponseEntity<Map<String, String>> deletePost(
-      @PathVariable Long postId,
-      @RequestAttribute Long userId) {
-
-    postService.deletePost(postId, userId);
-
-    Map<String, String> response = new HashMap<>();
-    response.put("message", "Post deleted successfully");
-    return ResponseEntity.ok(response);
+  public ResponseEntity<?> deletePost(@PathVariable Long postId, Authentication authentication) {
+    try {
+      Long userId = getUserIdFromAuthentication(authentication);
+      postService.deletePost(postId, userId);
+      return ResponseEntity.ok(Map.of("message", "Post deleted successfully"));
+    } catch (SecurityException e) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+    } catch (EntityNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to delete post"));
+    }
   }
 
   @PostMapping("/{postId}/like")
-  public ResponseEntity<Map<String, String>> likePost(
-      @PathVariable Long postId,
-      @RequestAttribute Long userId) {
-
-    postService.likePost(postId, userId);
-
-    Map<String, String> response = new HashMap<>();
-    response.put("message", "Post liked successfully");
-    return ResponseEntity.ok(response);
+  public ResponseEntity<?> likePost(@PathVariable Long postId, Authentication authentication) {
+    try {
+      Long userId = getUserIdFromAuthentication(authentication);
+      postService.likePost(postId, userId);
+      return ResponseEntity.ok(Map.of("message", "Post liked successfully"));
+    } catch (IllegalStateException e) {
+      return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
+    } catch (EntityNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to like post"));
+    }
   }
 
   @DeleteMapping("/{postId}/like")
-  public ResponseEntity<Map<String, String>> unlikePost(
-      @PathVariable Long postId,
-      @RequestAttribute Long userId) {
-
-    postService.unlikePost(postId, userId);
-
-    Map<String, String> response = new HashMap<>();
-    response.put("message", "Post unliked successfully");
-    return ResponseEntity.ok(response);
+  public ResponseEntity<?> unlikePost(@PathVariable Long postId, Authentication authentication) {
+    try {
+      Long userId = getUserIdFromAuthentication(authentication);
+      postService.unlikePost(postId, userId);
+      return ResponseEntity.ok(Map.of("message", "Post unliked successfully"));
+    } catch (EntityNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to unlike post"));
+    }
   }
 
   @PostMapping("/{postId}/save")
-  public ResponseEntity<Map<String, String>> savePost(
-      @PathVariable Long postId,
-      @RequestAttribute Long userId) {
-
-    postService.savePost(postId, userId);
-
-    Map<String, String> response = new HashMap<>();
-    response.put("message", "Post saved successfully");
-    return ResponseEntity.ok(response);
+  public ResponseEntity<?> savePost(@PathVariable Long postId, Authentication authentication) {
+    try {
+      Long userId = getUserIdFromAuthentication(authentication);
+      postService.savePost(postId, userId);
+      return ResponseEntity.ok(Map.of("message", "Post saved successfully"));
+    } catch (IllegalStateException e) {
+      return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
+    } catch (EntityNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to save post"));
+    }
   }
 
   @DeleteMapping("/{postId}/save")
-  public ResponseEntity<Map<String, String>> unsavePost(
-      @PathVariable Long postId,
-      @RequestAttribute Long userId) {
-
-    postService.unsavePost(postId, userId);
-
-    Map<String, String> response = new HashMap<>();
-    response.put("message", "Post unsaved successfully");
-    return ResponseEntity.ok(response);
+  public ResponseEntity<?> unsavePost(@PathVariable Long postId, Authentication authentication) {
+    try {
+      Long userId = getUserIdFromAuthentication(authentication);
+      postService.unsavePost(postId, userId);
+      return ResponseEntity.ok(Map.of("message", "Post unsaved successfully"));
+    } catch (EntityNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to unsave post"));
+    }
   }
 
   @GetMapping("/{postId}/interactions")
-  public ResponseEntity<Map<String, Boolean>> getPostInteractions(
-      @PathVariable Long postId,
-      @RequestAttribute Long userId) {
+  public ResponseEntity<?> getPostInteractions(@PathVariable Long postId, Authentication authentication) {
+    try {
+      Long userId = getUserIdFromAuthentication(authentication);
+      boolean isLiked = postService.isPostLikedByUser(postId, userId);
+      boolean isSaved = postService.isPostSavedByUser(postId, userId);
 
-    boolean isLiked = postService.isPostLikedByUser(postId, userId);
-    boolean isSaved = postService.isPostSavedByUser(postId, userId);
+      Map<String, Boolean> interactions = new HashMap<>();
+      interactions.put("isLiked", isLiked);
+      interactions.put("isSaved", isSaved);
 
-    Map<String, Boolean> interactions = new HashMap<>();
-    interactions.put("isLiked", isLiked);
-    interactions.put("isSaved", isSaved);
+      return ResponseEntity.ok(interactions);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to get interactions"));
+    }
+  }
 
-    return ResponseEntity.ok(interactions);
+  private Long getUserIdFromAuthentication(Authentication authentication) {
+    if (authentication == null || !authentication.isAuthenticated()) {
+      throw new SecurityException("User not authenticated");
+    }
+
+    String username = authentication.getName();
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new EntityNotFoundException("User not found"));
+    return user.getId();
   }
 }

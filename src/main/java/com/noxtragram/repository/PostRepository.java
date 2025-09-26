@@ -24,6 +24,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   // Tìm post theo ID và chưa bị xóa
   Optional<Post> findByIdAndIsDeletedFalse(Long id);
 
+  @Query("SELECT p FROM Post p JOIN p.hashtags h WHERE h.name = :hashtag AND p.isDeleted = false ORDER BY p.createdAt DESC")
+  Page<Post> findByHashtagName(@Param("hashtag") String hashtag, Pageable pageable);
+
   // Tìm post theo hashtag
   @Query("SELECT p FROM Post p JOIN p.hashtags h WHERE h.name = :hashtag AND p.isDeleted = false ORDER BY p.createdAt DESC")
   Page<Post> findByHashtag(@Param("hashtag") String hashtag, Pageable pageable);

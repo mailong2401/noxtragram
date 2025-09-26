@@ -6,6 +6,12 @@ import jakarta.persistence.*;
 @Table(name = "roles")
 public class Role {
 
+  // Định nghĩa enum bên trong class
+  public enum RoleName {
+    ROLE_USER,
+    ROLE_ADMIN
+  }
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
@@ -37,9 +43,4 @@ public class Role {
   public void setName(RoleName name) {
     this.name = name;
   }
-}
-
-enum RoleName {
-  ROLE_USER,
-  ROLE_ADMIN
 }

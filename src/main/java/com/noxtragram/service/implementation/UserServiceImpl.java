@@ -9,6 +9,7 @@ import com.noxtragram.model.dto.response.LoginResponseDTO;
 import com.noxtragram.model.dto.response.UserResponseDTO;
 import com.noxtragram.model.entity.User;
 import com.noxtragram.repository.UserRepository;
+import com.noxtragram.security.JwtUtils;
 import com.noxtragram.service.FileStorageService;
 import com.noxtragram.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,16 +30,19 @@ public class UserServiceImpl implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final FileStorageService fileStorageService;
   private final UserMapper userMapper;
+  private final JwtUtils jwtUtils; // ✅ THÊM JWT UTILS
 
   @Autowired
   public UserServiceImpl(UserRepository userRepository,
       PasswordEncoder passwordEncoder,
       FileStorageService fileStorageService,
-      UserMapper userMapper) {
+      UserMapper userMapper,
+      JwtUtils jwtUtils) { // ✅ THÊM VÀO CONSTRUCTOR
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.fileStorageService = fileStorageService;
     this.userMapper = userMapper;
+    this.jwtUtils = jwtUtils;
   }
 
   @Override
@@ -48,7 +52,7 @@ public class UserServiceImpl implements UserService {
 
     if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
       throw new OperationNotAllowedException("Invalid password");
-    }
+    } // ✅ ĐÃ THÊM DẤU } BỊ THIẾU
 
     if (!user.getIsActive()) {
       throw new OperationNotAllowedException("Account is deactivated");
@@ -58,8 +62,8 @@ public class UserServiceImpl implements UserService {
     user.setUpdatedAt(LocalDateTime.now());
     userRepository.save(user);
 
-    // In a real application, you would generate a JWT token here
-    String token = "generated-jwt-token"; // This should be replaced with actual JWT generation
+    // ✅ SỬA: Sử dụng JwtUtils để generate token
+    String token = jwtUtils.generateJwtToken(user.getUsername());
 
     UserResponseDTO userResponseDTO = userMapper.toResponseDTO(user);
     return new LoginResponseDTO(token, userResponseDTO);
@@ -203,7 +207,7 @@ public class UserServiceImpl implements UserService {
     return userMapper.toResponseDTO(user);
   }
 
-  // Follow system methods (same as before but returning DTOs)
+  // Follow system methods
   @Override
   public void followUser(Long followerId, Long followingId) {
     if (followerId.equals(followingId)) {
@@ -221,8 +225,10 @@ public class UserServiceImpl implements UserService {
       throw new OperationNotAllowedException("This account is private. Send follow request instead.");
     }
 
-    follower.follow(following);
+    follower.getFollowing().add(following);
+    following.getFollowers().add(follower);
     userRepository.save(follower);
+    userRepository.save(following);
   }
 
   @Override
@@ -234,27 +240,31 @@ public class UserServiceImpl implements UserService {
       throw new OperationNotAllowedException("Not following this user");
     }
 
-    follower.unfollow(following);
+    follower.getFollowing().remove(following);
+    following.getFollowers().remove(follower);
     userRepository.save(follower);
+    userRepository.save(following);
   }
 
   @Override
   public boolean isFollowing(Long userId, Long targetUserId) {
     User user = findEntityById(userId);
     User targetUser = findEntityById(targetUserId);
-    return user.isFollowing(targetUser);
+    return user.getFollowing().contains(targetUser);
   }
 
   @Override
   public List<UserResponseDTO> getFollowers(Long userId) {
-    return userRepository.findFollowersByUserId(userId).stream()
+    User user = findEntityById(userId);
+    return user.getFollowers().stream()
         .map(userMapper::toResponseDTO)
         .collect(Collectors.toList());
   }
 
   @Override
   public List<UserResponseDTO> getFollowing(Long userId) {
-    return userRepository.findFollowingByUserId(userId).stream()
+    User user = findEntityById(userId);
+    return user.getFollowing().stream()
         .map(userMapper::toResponseDTO)
         .collect(Collectors.toList());
   }
@@ -379,7 +389,7 @@ public class UserServiceImpl implements UserService {
     long mutualFollowers = currentUser.getFollowing().stream()
         .filter(suggestedUser.getFollowers()::contains)
         .count();
-    score += mutualFollowers * 10;
+    score += (int) mutualFollowers * 10;
 
     return score;
   }
