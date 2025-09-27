@@ -36,11 +36,11 @@ Dự án được phát triển nhằm mục đích học tập, rèn luyện k�
 ---
 
 ## ⚡ Yêu cầu cài đặt
-- [Java 17+](https://adoptopenjdk.net/)  
+- [Java 21+](https://adoptopenjdk.net/)  
 - [Maven 3.9+](https://maven.apache.org/)  
 - [Node.js 18+](https://nodejs.org/) / [Yarn](https://yarnpkg.com/)  
 - [Flutter](https://flutter.dev/) (nếu build mobile)  
-- MySQL hoặc PostgreSQL  
+- MySQL  
 
 ---
 
