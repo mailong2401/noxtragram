@@ -136,9 +136,9 @@ public class FileStorageService {
   /**
    * Lấy MIME type của file
    */
-  public String getFileContentType(String fileName) {
+  public String getFileContentType(String fileName, String category) {
     try {
-      Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+      Path filePath = createCategoryPath(category).resolve(fileName).normalize();
       return Files.probeContentType(filePath);
     } catch (IOException ex) {
       return "application/octet-stream";

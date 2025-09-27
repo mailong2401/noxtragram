@@ -30,14 +30,14 @@ public class UserServiceImpl implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final FileStorageService fileStorageService;
   private final UserMapper userMapper;
-  private final JwtUtils jwtUtils; // ✅ THÊM JWT UTILS
+  private final JwtUtils jwtUtils;
 
   @Autowired
   public UserServiceImpl(UserRepository userRepository,
       PasswordEncoder passwordEncoder,
       FileStorageService fileStorageService,
       UserMapper userMapper,
-      JwtUtils jwtUtils) { // ✅ THÊM VÀO CONSTRUCTOR
+      JwtUtils jwtUtils) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.fileStorageService = fileStorageService;
@@ -50,10 +50,12 @@ public class UserServiceImpl implements UserService {
     User user = userRepository.findByEmail(loginRequestDTO.getEmail())
         .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + loginRequestDTO.getEmail()));
 
+    // Kiểm tra mật khẩu có hợp lệ không
     if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
       throw new OperationNotAllowedException("Invalid password");
-    } // ✅ ĐÃ THÊM DẤU } BỊ THIẾU
+    }
 
+    // Kiểm tra có tài khoản nào đang học động không
     if (!user.getIsActive()) {
       throw new OperationNotAllowedException("Account is deactivated");
     }
@@ -62,7 +64,7 @@ public class UserServiceImpl implements UserService {
     user.setUpdatedAt(LocalDateTime.now());
     userRepository.save(user);
 
-    // ✅ SỬA: Sử dụng JwtUtils để generate token
+    // Sử dụng JwtUtils để generate token
     String token = jwtUtils.generateJwtToken(user.getUsername());
 
     UserResponseDTO userResponseDTO = userMapper.toResponseDTO(user);
@@ -71,10 +73,12 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserResponseDTO register(UserRequestDTO userRequestDTO) {
+    // kiểm tra Email có tồn tại trên hệ thống không
     if (userRepository.existsByEmail(userRequestDTO.getEmail())) {
       throw new DuplicateResourceException("Email already exists: " + userRequestDTO.getEmail());
     }
 
+    // kiểm tra Username có tồn tại trên hệ thống không
     if (userRepository.existsByUsername(userRequestDTO.getUsername())) {
       throw new DuplicateResourceException("Username already exists: " + userRequestDTO.getUsername());
     }

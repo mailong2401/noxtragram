@@ -37,6 +37,7 @@ public class WebSecurityConfig {
         .authorizeHttpRequests(authz -> authz
             // Public endpoints
             .requestMatchers(
+                "/uploads/**",
                 "/users/login",
                 "/users/register",
                 "/users/check-email",
