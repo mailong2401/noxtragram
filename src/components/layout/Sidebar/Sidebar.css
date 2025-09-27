@@ -5,8 +5,8 @@
   left: 0;
   top: 0;
   height: 100vh;
-  width: 16rem; /* 64 * 0.25rem = 16rem tương đương 256px */
-  background-color: white;
+  width: 16rem;
+  background-color: white; /* Giữ màu trắng */
   border-right: 1px solid #e5e7eb;
   padding: 1rem;
   z-index: 50;
@@ -22,7 +22,7 @@
 .sidebar-title {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #1f2937;
+  color: #1f2937; /* Màu đen/xám đậm */
   text-align: center;
 }
 
@@ -40,41 +40,45 @@
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   text-decoration: none;
-  color: inherit;
+  color: #374151; /* Màu chữ xám đậm */
+  gap: 10px;
 }
 
 .sidebar-menu-item:hover {
-  background-color: #f3f4f6;
+  background-color: #f3f4f6; /* Màu nền hover xám nhạt */
   transform: translateX(2px);
+  color: #1f2937; /* Màu chữ đậm hơn khi hover */
 }
 
 .sidebar-menu-item.active {
-  background-color: #eff6ff;
-  color: #2563eb;
+  background-color: #eff6ff; /* Màu nền active xanh nhạt */
+  color: #2563eb; /* Màu chữ xanh khi active */
   font-weight: 600;
 }
 
 .sidebar-menu-item.active:hover {
-  background-color: #dbeafe;
+  background-color: #dbeafe; /* Màu nền xanh đậm hơn khi hover */
 }
 
 .sidebar-icon {
-  margin-right: 0.75rem;
-  font-size: 1.125rem;
-  width: 1.5rem;
-  height: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s;
 }
 
-.sidebar-menu-item:hover .sidebar-icon {
-  transform: scale(1.1);
+.sidebar-icon img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: brightness(0); /* Đảm bảo icon màu đen */
 }
 
-.sidebar-menu-item.active .sidebar-icon {
-  color: #2563eb;
+.sidebar-menu-item:hover .sidebar-icon img {
+  filter: brightness(0) saturate(100%); /* Giữ màu đen khi hover */
+}
+
+.sidebar-menu-item.active .sidebar-icon img {
+  filter: brightness(0) saturate(100%) invert(33%) sepia(93%) saturate(7481%) hue-rotate(216deg) brightness(94%) contrast(91%); /* Chuyển icon sang màu xanh khi active */
 }
 
 .sidebar-menu-text {
@@ -122,14 +126,10 @@
     display: none;
   }
   
-  .sidebar-icon {
-    margin-right: 0;
-    font-size: 1.25rem;
-  }
-  
   .sidebar-menu-item {
     justify-content: center;
     padding: 0.75rem;
+    gap: 0;
   }
 }
 
@@ -159,12 +159,7 @@
     padding: 0.5rem;
     border-radius: 0.5rem;
     min-width: 3rem;
-  }
-  
-  .sidebar-icon {
-    margin-right: 0;
-    margin-bottom: 0.25rem;
-    font-size: 1rem;
+    gap: 4px;
   }
   
   .sidebar-menu-text {
@@ -190,34 +185,8 @@
   animation: slideInLeft 0.3s ease-out;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .sidebar {
-    background-color: #1f2937;
-    border-right-color: #374151;
-  }
-  
-  .sidebar-title {
-    color: #f9fafb;
-  }
-  
-  .sidebar-menu-item {
-    color: #d1d5db;
-  }
-  
-  .sidebar-menu-item:hover {
-    background-color: #374151;
-  }
-  
-  .sidebar-menu-item.active {
-    background-color: #1e40af;
-    color: #ffffff;
-  }
-  
-  .sidebar-menu-item.active:hover {
-    background-color: #1e3a8a;
-  }
-}
+/* Xóa dark mode support hoặc sửa thành light mode */
+/* Dark mode support - ĐÃ XÓA hoặc SỬA THÀNH LIGHT MODE */
 
 /* Focus styles for accessibility */
 .sidebar-menu-item:focus {
@@ -233,10 +202,12 @@
 @media (prefers-contrast: high) {
   .sidebar {
     border-right-width: 2px;
+    border-right-color: #000;
   }
   
   .sidebar-menu-item.active {
-    border: 2px solid #0000ff;
+    border: 2px solid #2563eb;
+    background-color: #e0f2fe;
   }
 }
 
@@ -250,7 +221,34 @@
     transition: none;
   }
   
-  .sidebar-menu-item:hover .sidebar-icon {
+  .sidebar-menu-item:hover {
     transform: none;
   }
+}
+
+/* Thêm style cho trạng thái mặc định của icon */
+.sidebar-icon svg {
+  color: #374151; /* Màu icon xám đậm */
+  transition: color 0.2s ease-in-out;
+}
+
+.sidebar-menu-item:hover .sidebar-icon svg {
+  color: #1f2937; /* Màu icon đen khi hover */
+}
+
+.sidebar-menu-item.active .sidebar-icon svg {
+  color: #2563eb; /* Màu icon xanh khi active */
+}
+
+/* Đảm bảo text luôn có màu phù hợp */
+.sidebar-menu-item {
+  color: #374151;
+}
+
+.sidebar-menu-item:hover {
+  color: #1f2937;
+}
+
+.sidebar-menu-item.active {
+  color: #2563eb;
 }

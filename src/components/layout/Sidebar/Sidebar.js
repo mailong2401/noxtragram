@@ -1,61 +1,37 @@
-// components/layout/Sidebar/Sidebar.jsx
 import { Link, useLocation } from 'react-router-dom';
-import './Sidebar.css'
+import './Sidebar.css';
+
+// import icons
+import homeIcon from '../../../assets/icons/home.png';
+import searchIcon from '../../../assets/icons/search.png';
+import exploreIcon from '../../../assets/icons/explore.png';
+import reelsIcon from '../../../assets/icons/reels.png';
+import messageIcon from '../../../assets/icons/message.png';
+import notificationsIcon from '../../../assets/icons/notifications.png';
+import createIcon from '../../../assets/icons/create.png';
+import dashboardIcon from '../../../assets/icons/dashboard.png';
+import profileIcon from '../../../assets/icons/profile.png';
+import settingIcon from '../../../assets/icons/setting.png';
+import logoutIcon from '../../../assets/icons/logout.png';
 
 const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { 
-      name: 'Home', 
-      path: '/',
-      icon: '🏠'
-    },
-    { 
-      name: 'Search', 
-      path: '/search',
-      icon: '🔍'
-    },
-    { 
-      name: 'Explore', 
-      path: '/explore',
-      icon: '🌎'
-    },
-    { 
-      name: 'Reels', 
-      path: '/reels',
-      icon: '🎬'
-    },
-    { 
-      name: 'Messages', 
-      path: '/message',
-      icon: '💬'
-    },
-    { 
-      name: 'Notifications', 
-      path: '/notifications',
-      icon: '🔔'
-    },
-    { 
-      name: 'Create', 
-      path: '/create-post',
-      icon: '➕'
-    },
-    { 
-      name: 'Dashboard', 
-      path: '/dashboard',
-      icon: '📊'
-    },
-    { 
-      name: 'Profile', 
-      path: '/profile',
-      icon: '👤'
-    }
+    { name: 'Home', path: '/', icon: homeIcon },
+    { name: 'Search', path: '/search', icon: searchIcon },
+    { name: 'Explore', path: '/explore', icon: exploreIcon },
+    { name: 'Reels', path: '/reels', icon: reelsIcon },
+    { name: 'Messages', path: '/message', icon: messageIcon },
+    { name: 'Notifications', path: '/notifications', icon: notificationsIcon },
+    { name: 'Create', path: '/create-post', icon: createIcon },
+    { name: 'Dashboard', path: '/dashboard', icon: dashboardIcon },
+    { name: 'Profile', path: '/profile', icon: profileIcon },
+    { name: 'Setting', path: '/setting', icon: settingIcon },
+    { name: 'Logout', path: '/logout', icon: logoutIcon },
   ];
 
-  const isActive = (path) => {
-    return location.pathname === path;
-  };
+  const isActive = (path) => location.pathname === path;
 
   return (
     <div className="sidebar">
@@ -71,7 +47,7 @@ const Sidebar = () => {
             className={`sidebar-menu-item ${isActive(item.path) ? 'active' : ''}`}
           >
             <div className="sidebar-icon">
-              {item.icon}
+              <img src={item.icon} alt={`${item.name} icon`} />
             </div>
             <span className="sidebar-menu-text">{item.name}</span>
           </Link>
@@ -82,3 +58,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
