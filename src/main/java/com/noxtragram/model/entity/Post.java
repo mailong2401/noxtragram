@@ -24,9 +24,10 @@ public class Post {
   @Column(name = "image_url")
   private String imageUrl; // URL ảnh chính
 
-  @ElementCollection
+  @ElementCollection(fetch = FetchType.EAGER) // Thay đổi thành EAGER
   @CollectionTable(name = "post_images", joinColumns = @JoinColumn(name = "post_id"))
   @Column(name = "image_url")
+  @OrderColumn(name = "image_order") // Thêm dòng này để đảm bảo thứ tự ảnh
   private List<String> imageUrls = new ArrayList<>(); // Cho multiple images
 
   @Column(name = "video_url")

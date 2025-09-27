@@ -64,10 +64,13 @@ public class PostServiceImpl implements PostService {
         }
       }
 
+      // Sửa lỗi: Luôn set imageUrls, chỉ set imageUrl nếu có 1 ảnh
+      post.setImageUrls(imageUrls);
       if (imageUrls.size() == 1) {
         post.setImageUrl(imageUrls.get(0));
+      } else {
+        post.setImageUrl(null); // Clear imageUrl nếu có nhiều ảnh
       }
-      post.setImageUrls(imageUrls);
     }
 
     // Xử lý hashtags

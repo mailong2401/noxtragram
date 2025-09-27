@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping("/posts")
 @CrossOrigin(origins = "http://localhost:3000") // ReactJS port
 public class PostController {
 
@@ -51,13 +51,35 @@ public class PostController {
       User user = userRepository.findByUsername(username)
           .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
+      // Validate files
+      if (files != null) {
+        for (MultipartFile file : files) {
+          if (file.isEmpty()) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "File cannot be empty"));
+          }
+
+          // Validate file type
+          String contentType = file.getContentType();
+          if (contentType == null ||
+              (!contentType.startsWith("image/") && !contentType.startsWith("video/"))) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Only image and video files are allowed"));
+          }
+        }
+      }
+
       PostRequestDTO postRequest = new PostRequestDTO();
       postRequest.setCaption(caption);
       postRequest.setLocation(location);
 
       if (hashtags != null && !hashtags.trim().isEmpty()) {
-        List<String> hashtagList = Arrays.stream(hashtags.split("\\s+"))
+        // Sửa lỗi xử lý hashtags
+        List<String> hashtagList = Arrays.stream(hashtags.split("[\\s,]+"))
             .filter(tag -> tag.startsWith("#"))
+            .map(tag -> tag.replaceAll("[^a-zA-Z0-9#_]", "")) // Clean hashtag
+            .filter(tag -> tag.length() > 1) // Ít nhất # + 1 ký tự
+            .distinct()
             .collect(Collectors.toList());
         postRequest.setHashtags(hashtagList);
       }
