@@ -1,0 +1,65 @@
+/* layouts/MainLayout.module.css */
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main {
+    flex: 1;
+    margin-left: 16rem; /* 64 * 0.25rem = 16rem tương đương 256px */
+    padding: 2rem;
+    min-height: 100vh;
+    overflow: auto;
+    background-color: #ffffff;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .main {
+        margin-left: 5rem;
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .layout {
+        flex-direction: column;
+    }
+    
+    .main {
+        margin-left: 0;
+        margin-top: 4rem;
+        padding: 1rem;
+        min-height: calc(100vh - 4rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .main {
+        padding: 0.75rem;
+        margin-top: 3.5rem;
+        min-height: calc(100vh - 3.5rem);
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .main {
+        background-color: #ffffff;
+        color: #ffffff;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .main {
+        border-left: 2px solid #ffffff;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .layout {
+        transition: none;
+    }
+}
