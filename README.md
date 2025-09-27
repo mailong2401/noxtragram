@@ -97,25 +97,93 @@ The application will be available at `http://localhost:8080/api`
 
 ## 📚 API Documentation
 
-### Authentication Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | User login |
-| POST | `/api/auth/refresh` | Refresh JWT token |
-| POST | `/api/auth/logout` | User logout |
+## 📌 User Endpoints
 
-### User Endpoints
+| **Method** | **Endpoint**                 | **Description**                                      |
+| ---------- | ---------------------------- | ---------------------------------------------------- |
+| **POST**   | `/users/register`            | Đăng ký tài khoản mới                                |
+| **POST**   | `/users/login`               | Đăng nhập, trả về token                              |
+| **GET**    | `/users/me`                  | Lấy thông tin user hiện tại (dựa vào Authentication) |
+| **GET**    | `/users/{id}`                | Lấy user theo ID                                     |
+| **GET**    | `/users/email/{email}`       | Lấy user theo email                                  |
+| **GET**    | `/users/username/{username}` | Lấy user theo username                               |
+| **PUT**    | `/users/{userId}`            | Cập nhật thông tin user                              |
+| **DELETE** | `/users/{userId}`            | Xóa user                                             |
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/users/profile` | Get current user profile |
-| PUT | `/api/users/profile` | Update user profile |
-| GET | `/api/users/{userId}` | Get user by ID |
-| POST | `/api/users/follow/{userId}` | Follow a user |
-| DELETE | `/api/users/follow/{userId}` | Unfollow a user |
-| GET | `/api/users/search` | Search users |
+---
+
+## 🔐 Password Management
+
+| **Method** | **Endpoint**               | **Description**                       |
+| ---------- | -------------------------- | ------------------------------------- |
+| **PUT**    | `/users/{userId}/password` | Đổi mật khẩu                          |
+| **POST**   | `/users/reset-password`    | Reset mật khẩu (theo email/OTP, v.v.) |
+
+---
+
+## 📸 Profile Picture
+
+| **Method** | **Endpoint**                      | **Description**     |
+| ---------- | --------------------------------- | ------------------- |
+| **POST**   | `/users/{userId}/profile-picture` | Upload ảnh đại diện |
+| **DELETE** | `/users/{userId}/profile-picture` | Xóa ảnh đại diện    |
+
+---
+
+## 👥 Follow System
+
+| **Method** | **Endpoint**                                  | **Description**                         |
+| ---------- | --------------------------------------------- | --------------------------------------- |
+| **POST**   | `/users/{followerId}/follow/{followingId}`    | Follow user khác                        |
+| **POST**   | `/users/{followerId}/unfollow/{followingId}`  | Unfollow user khác                      |
+| **GET**    | `/users/{userId}/is-following/{targetUserId}` | Kiểm tra user có follow user khác không |
+| **GET**    | `/users/{userId}/followers`                   | Lấy danh sách followers                 |
+| **GET**    | `/users/{userId}/following`                   | Lấy danh sách đang follow               |
+| **GET**    | `/users/{userId}/follower-count`              | Lấy số lượng followers                  |
+| **GET**    | `/users/{userId}/following-count`             | Lấy số lượng following                  |
+
+---
+
+## 🔍 Search
+
+| **Method** | **Endpoint**                          | **Description**              |
+| ---------- | ------------------------------------- | ---------------------------- |
+| **GET**    | `/users/search?keyword=...`           | Tìm kiếm user theo keyword   |
+| **GET**    | `/users/search/username?username=...` | Tìm kiếm user theo username  |
+| **GET**    | `/users/search/fullname?fullName=...` | Tìm kiếm user theo full name |
+
+---
+
+## 💡 Suggestions
+
+| **Method** | **Endpoint**                           | **Description**       |
+| ---------- | -------------------------------------- | --------------------- |
+| **GET**    | `/users/{userId}/suggestions?limit=10` | Gợi ý bạn bè cho user |
+
+---
+
+## 👑 Admin Endpoints
+
+| **Method** | **Endpoint**                 | **Description**               |
+| ---------- | ---------------------------- | ----------------------------- |
+| **POST**   | `/users/{userId}/verify`     | Xác thực (tick xanh) cho user |
+| **POST**   | `/users/{userId}/unverify`   | Hủy xác thực user             |
+| **POST**   | `/users/{userId}/deactivate` | Vô hiệu hóa tài khoản         |
+| **POST**   | `/users/{userId}/reactivate` | Kích hoạt lại tài khoản       |
+
+---
+
+## 🔧 Utility
+
+| **Method** | **Endpoint**                         | **Description**                          |
+| ---------- | ------------------------------------ | ---------------------------------------- |
+| **GET**    | `/users/check-email?email=...`       | Kiểm tra email đã tồn tại chưa           |
+| **GET**    | `/users/check-username?username=...` | Kiểm tra username đã tồn tại chưa        |
+| **GET**    | `/users/stats/active-count`          | Lấy tổng số user đang hoạt động          |
+| **GET**    | `/users/active`                      | Lấy danh sách tất cả user đang hoạt động |
+
+
 
 ### Post Endpoints
 
