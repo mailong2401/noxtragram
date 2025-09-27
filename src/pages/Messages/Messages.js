@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import userService from '../../services/userService';
-import './Messages.css';
+import styles from './Messages.module.css';
 
 const Messages = () => {
     const { user, isAuthenticated } = useAuth();
@@ -296,63 +296,65 @@ const Messages = () => {
     }
 
     return (
-        <div className="messages-container">
+        <div className={styles.container}>
             {/* Header */}
-            <header className="messages-header">
-                <div className="header-content">
-                    <button className="back-btn" onClick={() => navigate('/')}>
-                        <span className="icon">←</span>
+            <header className={styles.header}>
+                <div className={styles.headerContent}>
+                    <button className={styles.backBtn} onClick={() => navigate('/')}>
+                        <span>←</span>
                     </button>
-                    <h1 className="header-title">{activeConversation ? activeConversation.user.username : 'Messages'}</h1>
-                    <button className="new-chat-btn">
-                        <span className="icon">✏️</span>
+                    <h1 className={styles.headerTitle}>
+                        {activeConversation ? activeConversation.user.username : 'Messages'}
+                    </h1>
+                    <button className={styles.newChatBtn}>
+                        <span>✏️</span>
                     </button>
                 </div>
             </header>
 
-            <div className="messages-content">
+            <div className={styles.content}>
                 {/* Conversations List */}
-                <div className={`conversations-sidebar ${activeConversation ? 'collapsed' : ''}`}>
-                    <div className="conversations-header">
-                        <h2 className="sidebar-title">{user?.username}</h2>
-                        <button className="new-message-btn">
-                            <span className="icon">✉️</span>
+                <div className={`${styles.sidebar} ${activeConversation ? styles.collapsed : ''}`}>
+                    <div className={styles.sidebarHeader}>
+                        <h2 className={styles.sidebarTitle}>{user?.username}</h2>
+                        <button className={styles.newMessageBtn}>
+                            <span>✉️</span>
                         </button>
                     </div>
 
-                    <div className="search-container">
+                    <div className={styles.searchContainer}>
                         <input
                             type="text"
                             placeholder="Search messages..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="search-input"
+                            className={styles.searchInput}
                         />
                     </div>
 
-                    <div className="conversations-list">
+                    <div className={styles.conversationsList}>
                         {filteredConversations.map(conversation => (
                             <div
                                 key={conversation.id}
-                                className={`conversation-item ${activeConversation?.id === conversation.id ? 'active' : ''}`}
+                                className={`${styles.conversationItem} ${activeConversation?.id === conversation.id ? styles.active : ''}`}
                                 onClick={() => handleConversationSelect(conversation)}
                             >
-                                <div className="conversation-avatar">
+                                <div className={styles.conversationAvatar}>
                                     <img src={conversation.user.profilePicture} alt={conversation.user.username} />
-                                    {conversation.user.isOnline && <span className="online-indicator"></span>}
+                                    {conversation.user.isOnline && <span className={styles.onlineIndicator}></span>}
                                 </div>
-                                <div className="conversation-info">
-                                    <div className="conversation-header">
-                                        <span className="username">{conversation.user.username}</span>
-                                        <span className="timestamp">{formatTime(conversation.lastMessage.timestamp)}</span>
+                                <div className={styles.conversationInfo}>
+                                    <div className={styles.conversationHeader}>
+                                        <span className={styles.username}>{conversation.user.username}</span>
+                                        <span className={styles.timestamp}>{formatTime(conversation.lastMessage.timestamp)}</span>
                                     </div>
-                                    <div className="conversation-preview">
-                                        <span className={`message-preview ${!conversation.lastMessage.isRead && !conversation.lastMessage.isSender ? 'unread' : ''}`}>
+                                    <div className={styles.conversationPreview}>
+                                        <span className={`${styles.messagePreview} ${!conversation.lastMessage.isRead && !conversation.lastMessage.isSender ? styles.unread : ''}`}>
                                             {conversation.lastMessage.isSender ? 'You: ' : ''}
                                             {conversation.lastMessage.text}
                                         </span>
                                         {conversation.unreadCount > 0 && (
-                                            <span className="unread-badge">{conversation.unreadCount}</span>
+                                            <span className={styles.unreadBadge}>{conversation.unreadCount}</span>
                                         )}
                                     </div>
                                 </div>
@@ -363,41 +365,41 @@ const Messages = () => {
 
                 {/* Chat Area */}
                 {activeConversation ? (
-                    <div className="chat-area">
+                    <div className={styles.chatArea}>
                         {/* Chat Header */}
-                        <div className="chat-header">
-                            <div className="chat-user-info">
-                                <div className="chat-avatar">
+                        <div className={styles.chatHeader}>
+                            <div className={styles.chatUserInfo}>
+                                <div className={styles.chatAvatar}>
                                     <img src={activeConversation.user.profilePicture} alt={activeConversation.user.username} />
-                                    {activeConversation.user.isOnline && <span className="online-indicator"></span>}
+                                    {activeConversation.user.isOnline && <span className={styles.onlineIndicator}></span>}
                                 </div>
-                                <div className="chat-user-details">
-                                    <span className="username">{activeConversation.user.username}</span>
-                                    <span className="user-status">
+                                <div className={styles.chatUserDetails}>
+                                    <span className={styles.username}>{activeConversation.user.username}</span>
+                                    <span className={styles.userStatus}>
                                         {activeConversation.user.isOnline ? 'Online' : `Last seen ${formatTime(activeConversation.user.lastSeen)}`}
                                     </span>
                                 </div>
                             </div>
-                            <div className="chat-actions">
-                                <button className="action-btn">
-                    <span className="icon">📞</span>
+                            <div className={styles.chatActions}>
+                                <button className={styles.actionBtn}>
+                                    <span>📞</span>
                                 </button>
-                                <button className="action-btn">
-                                    <span className="icon">ⓘ</span>
+                                <button className={styles.actionBtn}>
+                                    <span>ⓘ</span>
                                 </button>
                             </div>
                         </div>
 
                         {/* Messages List */}
-                        <div className="messages-list">
+                        <div className={styles.messagesList}>
                             {messages.map(message => (
                                 <div
                                     key={message.id}
-                                    className={`message ${message.isSender ? 'sent' : 'received'}`}
+                                    className={`${styles.message} ${message.isSender ? styles.sent : styles.received}`}
                                 >
-                                    <div className="message-bubble">
-                                        <p className="message-text">{message.text}</p>
-                                        <span className="message-time">{formatTime(message.timestamp)}</span>
+                                    <div className={styles.messageBubble}>
+                                        <p className={styles.messageText}>{message.text}</p>
+                                        <span className={styles.messageTime}>{formatTime(message.timestamp)}</span>
                                     </div>
                                 </div>
                             ))}
@@ -405,22 +407,22 @@ const Messages = () => {
                         </div>
 
                         {/* Message Input */}
-                        <form onSubmit={handleSendMessage} className="message-input-container">
-                            <div className="input-wrapper">
-                                <button type="button" className="attachment-btn">
-                                    <span className="icon">📎</span>
+                        <form onSubmit={handleSendMessage} className={styles.messageInputContainer}>
+                            <div className={styles.inputWrapper}>
+                                <button type="button" className={styles.attachmentBtn}>
+                                    <span>📎</span>
                                 </button>
                                 <input
                                     type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
                                     placeholder="Message..."
-                                    className="message-input"
+                                    className={styles.messageInput}
                                     disabled={isSending}
                                 />
                                 <button
                                     type="submit"
-                                    className="send-btn"
+                                    className={styles.sendBtn}
                                     disabled={!newMessage.trim() || isSending}
                                 >
                                     {isSending ? '⏳' : '➤'}
@@ -429,12 +431,12 @@ const Messages = () => {
                         </form>
                     </div>
                 ) : (
-                    <div className="no-conversation-selected">
-                        <div className="empty-state">
-                            <span className="icon">💬</span>
+                    <div className={styles.noConversation}>
+                        <div className={styles.emptyState}>
+                            <span className={styles.emptyStateIcon}>💬</span>
                             <h3>Your Messages</h3>
                             <p>Send private messages to a friend or group.</p>
-                            <button className="start-chat-btn">Send Message</button>
+                            <button className={styles.startChatBtn}>Send Message</button>
                         </div>
                     </div>
                 )}

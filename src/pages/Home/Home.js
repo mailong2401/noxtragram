@@ -94,25 +94,7 @@ const Home = () => {
 
     return (
         <div className="home-container">
-            {/* Header */}
-            <header className="home-header">
-                <div className="header-content">
-                    <h1 className="logo">Instagram</h1>
-                    <div className="header-icons">
-                        <button className="icon-btn">
-                            <i className="fas fa-plus-square"></i>
-                        </button>
-                        <button className="icon-btn">
-                            <i className="fas fa-heart"></i>
-                        </button>
-                        <button className="icon-btn" onClick={handleLogout}>
-                            <i className="fas fa-sign-out-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            {/* Stories Section */}
+                        {/* Stories Section */}
             <div className="stories-container">
                 <div className="stories">
                     {stories.map(story => (
@@ -189,25 +171,6 @@ const Home = () => {
                     </div>
                 ))}
             </div>
-
-            {/* Navigation Bar */}
-            <nav className="bottom-nav">
-                <button className="nav-btn active">
-                    <i className="fas fa-home"></i>
-                </button>
-                <button className="nav-btn">
-                    <i className="fas fa-search"></i>
-                </button>
-                <button className="nav-btn">
-                    <i className="fas fa-plus-square"></i>
-                </button>
-                <button className="nav-btn">
-                    <i className="far fa-heart"></i>
-                </button>
-                <button className="nav-btn" onClick={() => navigate('/profile')}>
-                    <img src={user?.avatar || 'https://i.pravatar.cc/150'} alt="Profile" className="nav-avatar" />
-                </button>
-            </nav>
         </div>
     );
 };

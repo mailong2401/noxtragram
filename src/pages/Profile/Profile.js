@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import './Profile.css';
 import { useNavigate } from 'react-router-dom';
 import userService from '../../services/userService.js';
+import postService from '../../services/postService.js';
 
 const Profile = () => {
     const { user, isAuthenticated, updateUser } = useAuth();
@@ -14,6 +15,28 @@ const Profile = () => {
     const [followers, setFollowers] = useState([]);
     const [following, setFollowing] = useState([]);
     const navigate = useNavigate();
+
+    // Hàm thêm token vào URL
+    const getImageUrlWithToken = (imageUrl) => {
+        if (!imageUrl) return null;
+        
+        // Nếu đã là URL external thì giữ nguyên
+        if (imageUrl.includes('pravatar.cc') || imageUrl.includes('picsum.photos') || imageUrl.startsWith('http')) {
+            return imageUrl;
+        }
+        
+        // Thêm base URL nếu là đường dẫn tương đối
+        let fullUrl = imageUrl;
+        if (!imageUrl.startsWith('http')) {
+            fullUrl = `http://localhost:8080${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+        }
+        
+        // Thêm token vào query parameter
+        const token = localStorage.getItem('token');
+        const separator = fullUrl.includes('?') ? '&' : '?';
+        
+        return token ? `${fullUrl}${separator}token=${token}` : fullUrl;
+    };
 
     // Fetch profile data
     useEffect(() => {
@@ -66,15 +89,14 @@ const Profile = () => {
 
     const fetchPosts = async () => {
         try {
-            // TODO: Thay thế bằng PostService khi có
-            const mockPosts = [
-                { id: 1, image: 'https://picsum.photos/300/300?random=1', likes: 243, comments: 15, type: 'image' },
-                { id: 2, image: 'https://picsum.photos/300/300?random=2', likes: 187, comments: 8, type: 'image' },
-                { id: 3, image: 'https://picsum.photos/300/300?random=3', likes: 321, comments: 24, type: 'image' },
-            ];
-            setPosts(mockPosts);
+            if (!user?.id) return;
+            
+            const userPosts = await postService.getUserPosts(user.id);
+            setPosts(userPosts.content || userPosts || []);
         } catch (error) {
             console.error('Error fetching posts:', error);
+            // Fallback to empty array if error
+            setPosts([]);
         }
     };
 
@@ -138,6 +160,7 @@ const Profile = () => {
     }
 
     const displayData = profileData || user;
+    const postsCount = posts.length;
 
     return (
         <div className="profile-container">
@@ -150,7 +173,7 @@ const Profile = () => {
                         </button>
                         <div className="profile-header-info">
                             <span className="username">{displayData.username}</span>
-                            <span className="posts-count">{posts.length} posts</span>
+                            <span className="posts-count">{postsCount} posts</span>
                         </div>
                     </div>
                     <div className="header-actions">
@@ -167,8 +190,11 @@ const Profile = () => {
                     <div className="profile-avatar-section">
                         <div className="profile-avatar">
                             <img 
-                                src={displayData.profilePicture || user?.avatar || 'https://i.pravatar.cc/150?img=1'} 
+                                src={getImageUrlWithToken(displayData.profilePicture) || user?.avatar || 'https://i.pravatar.cc/150?img=1'} 
                                 alt={displayData.username}
+                                onError={(e) => {
+                                    e.target.src = 'https://i.pravatar.cc/150?img=1';
+                                }}
                             />
                             <input 
                                 type="file" 
@@ -181,7 +207,7 @@ const Profile = () => {
                     
                     <div className="profile-stats">
                         <div className="stat">
-                            <span className="stat-number">{posts.length}</span>
+                            <span className="stat-number">{postsCount}</span>
                             <span className="stat-label">Posts</span>
                         </div>
                         <div className="stat" onClick={() => setActiveTab('followers')}>
@@ -241,7 +267,7 @@ const Profile = () => {
 
             {/* Content based on active tab */}
             {activeTab === 'posts' && (
-                <PostsGrid posts={posts} isLoading={isLoading} />
+                <PostsGrid posts={posts} isLoading={isLoading} getImageUrlWithToken={getImageUrlWithToken} />
             )}
 
             {activeTab === 'followers' && (
@@ -250,6 +276,7 @@ const Profile = () => {
                     onFollow={handleFollow}
                     onUnfollow={handleUnfollow}
                     currentUserId={user.id}
+                    getImageUrlWithToken={getImageUrlWithToken}
                 />
             )}
 
@@ -258,6 +285,7 @@ const Profile = () => {
                     following={following} 
                     onUnfollow={handleUnfollow}
                     currentUserId={user.id}
+                    getImageUrlWithToken={getImageUrlWithToken}
                 />
             )}
         </div>
@@ -265,7 +293,7 @@ const Profile = () => {
 };
 
 // Component cho grid posts
-const PostsGrid = ({ posts, isLoading }) => {
+const PostsGrid = ({ posts, isLoading, getImageUrlWithToken }) => {
     if (isLoading) {
         return (
             <div className="profile-loading">
@@ -275,20 +303,36 @@ const PostsGrid = ({ posts, isLoading }) => {
         );
     }
 
+    if (posts.length === 0) {
+        return (
+            <div className="no-posts">
+                <div className="no-posts-icon">📷</div>
+                <h3>No Posts Yet</h3>
+                <p>When you share photos and videos, they will appear here.</p>
+            </div>
+        );
+    }
+
     return (
         <div className="posts-grid">
             {posts.map(post => (
                 <div key={post.id} className="post-item">
-                    <img src={post.image} alt={`Post ${post.id}`} />
-                    {post.type === 'video' && (
+                    <img 
+                        src={getImageUrlWithToken(post.imageUrl) || 'https://picsum.photos/300/300'} 
+                        alt={`Post ${post.id}`}
+                        onError={(e) => {
+                            e.target.src = 'https://picsum.photos/300/300';
+                        }}
+                    />
+                    {post.type === 'VIDEO' && (
                         <div className="video-indicator">
                             <span className="icon">▶️</span>
                         </div>
                     )}
                     <div className="post-overlay">
                         <div className="post-stats">
-                            <span className="stat">❤️ {post.likes}</span>
-                            <span className="stat">💬 {post.comments}</span>
+                            <span className="stat">❤️ {post.likeCount || 0}</span>
+                            <span className="stat">💬 {post.commentCount || 0}</span>
                         </div>
                     </div>
                 </div>
@@ -298,53 +342,77 @@ const PostsGrid = ({ posts, isLoading }) => {
 };
 
 // Component cho danh sách followers
-const FollowersList = ({ followers, onFollow, onUnfollow, currentUserId }) => {
+const FollowersList = ({ followers, onFollow, onUnfollow, currentUserId, getImageUrlWithToken }) => {
     return (
         <div className="followers-list">
             <h3>Followers ({followers.length})</h3>
-            {followers.map(follower => (
-                <div key={follower.id} className="follower-item">
-                    <img src={follower.profilePicture} alt={follower.username} />
-                    <div className="follower-info">
-                        <span className="username">{follower.username}</span>
-                        <span className="name">{follower.fullName}</span>
-                    </div>
-                    {follower.id !== currentUserId && (
-                        <button 
-                            className="follow-btn"
-                            onClick={() => onFollow(follower.id)}
-                        >
-                            Follow
-                        </button>
-                    )}
+            {followers.length === 0 ? (
+                <div className="no-followers">
+                    <p>No followers yet</p>
                 </div>
-            ))}
+            ) : (
+                followers.map(follower => (
+                    <div key={follower.id} className="follower-item">
+                        <img 
+                            src={getImageUrlWithToken(follower.profilePicture) || follower.avatar || 'https://i.pravatar.cc/150'} 
+                            alt={follower.username}
+                            onError={(e) => {
+                                e.target.src = 'https://i.pravatar.cc/150';
+                            }}
+                        />
+                        <div className="follower-info">
+                            <span className="username">{follower.username}</span>
+                            <span className="name">{follower.fullName || follower.username}</span>
+                        </div>
+                        {follower.id !== currentUserId && (
+                            <button 
+                                className="follow-btn"
+                                onClick={() => follower.isFollowing ? onUnfollow(follower.id) : onFollow(follower.id)}
+                            >
+                                {follower.isFollowing ? 'Unfollow' : 'Follow'}
+                            </button>
+                        )}
+                    </div>
+                ))
+            )}
         </div>
     );
 };
 
 // Component cho danh sách following
-const FollowingList = ({ following, onUnfollow, currentUserId }) => {
+const FollowingList = ({ following, onUnfollow, currentUserId, getImageUrlWithToken }) => {
     return (
         <div className="following-list">
             <h3>Following ({following.length})</h3>
-            {following.map(followed => (
-                <div key={followed.id} className="following-item">
-                    <img src={followed.profilePicture} alt={followed.username} />
-                    <div className="following-info">
-                        <span className="username">{followed.username}</span>
-                        <span className="name">{followed.fullName}</span>
-                    </div>
-                    {followed.id !== currentUserId && (
-                        <button 
-                            className="unfollow-btn"
-                            onClick={() => onUnfollow(followed.id)}
-                        >
-                            Unfollow
-                        </button>
-                    )}
+            {following.length === 0 ? (
+                <div className="no-following">
+                    <p>Not following anyone yet</p>
                 </div>
-            ))}
+            ) : (
+                following.map(followed => (
+                    <div key={followed.id} className="following-item">
+                        <img 
+                            src={getImageUrlWithToken(followed.profilePicture) || followed.avatar || 'https://i.pravatar.cc/150'} 
+                            alt={followed.username}
+                            onError={(e) => {
+                                e.target.src = 'https://i.pravatar.cc/150';
+                            }}
+                        />
+                        <div className="following-info">
+                            <span className="username">{followed.username}</span>
+                            <span className="name">{followed.fullName || followed.username}</span>
+                        </div>
+                        {followed.id !== currentUserId && (
+                            <button 
+                                className="unfollow-btn"
+                                onClick={() => onUnfollow(followed.id)}
+                            >
+                                Unfollow
+                            </button>
+                        )}
+                    </div>
+                ))
+            )}
         </div>
     );
 };

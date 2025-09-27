@@ -1,22 +1,21 @@
-// services/authService.js
-import { apiClient } from './api.js';
+import api from './api.js';
 
 export const authService = {
   // Đăng nhập
   login: async (credentials) => {
-    const response = await apiClient.post('/users/login', credentials);
+    const response = await api.post('/users/login', credentials);
     return response.data;
   },
   
   // Đăng ký
   register: async (userData) => {
-    const response = await apiClient.post('/users/register', userData);
+    const response = await api.post('/users/register', userData);
     return response.data;
   },
   
-  // Lấy thông tin user hiện tại - SỬA LẠI THEO BACKEND
+  // Lấy thông tin user hiện tại
   getCurrentUser: async () => {
-    const response = await apiClient.get('/users/me');
+    const response = await api.get('/users/me');
     return response.data;
   },
   
@@ -24,16 +23,12 @@ export const authService = {
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    localStorage.removeItem('userId');
   },
   
-  // Lưu token và user info - SỬA LẠI
-  setAuthData: (token, userData) => {
+  // Lưu token và user info
+  setAuthData: (token, user) => {
     localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    if (userData.user && userData.user.id) {
-      localStorage.setItem('userId', userData.user.id);
-    }
+    localStorage.setItem('user', JSON.stringify(user));
   },
   
   // Lấy token
@@ -54,13 +49,13 @@ export const authService = {
   
   // Kiểm tra email tồn tại
   checkEmailExists: async (email) => {
-    const response = await apiClient.get(`/users/check-email?email=${encodeURIComponent(email)}`);
+    const response = await api.get(`/users/check-email/${email}`);
     return response.data;
   },
   
   // Kiểm tra username tồn tại
   checkUsernameExists: async (username) => {
-    const response = await apiClient.get(`/users/check-username?username=${encodeURIComponent(username)}`);
+    const response = await api.get(`/users/check-username/${username}`);
     return response.data;
   }
 };

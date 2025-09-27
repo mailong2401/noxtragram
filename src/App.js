@@ -1,24 +1,29 @@
-import React from 'react';
+// App.js
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import MainLayout from './layouts/MainLayout';
+import Home from './pages/Home/Home';
+import Profile from './pages/Profile/Profile';
+import Message from './pages/Messages/Messages';
+import CreatePost from './components/ui/PostCard/CreatePost';
 import Login from './pages/Auth/Login/Login';
 import Register from './pages/Auth/Register/Register';
-import Home from './pages/Home/Home';
-import Profile from './pages/Profile/Profile'; // ✅ đổi tên
-import Message from './pages/Messages/Messages'
-import CreatePost from './components/ui/PostCard/CreatePost'
 import './App.css';
 
-// Protected Route Component
+// Protected Route Component với Layout
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   
   if (loading) return <div>Loading...</div>;
   
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  return isAuthenticated ? (
+    <MainLayout>{children}</MainLayout>
+  ) : (
+    <Navigate to="/login" replace />
+  );
 };
 
-// Public Route Component
+// Public Route Component (không có Layout)
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   
@@ -33,13 +38,22 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
+            {/* Public Routes (không có Sidebar) */}
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
+            {/* Protected Routes (có Sidebar thông qua MainLayout) */}
             <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/message" element={<ProtectedRoute><Message /></ProtectedRoute>} />
             <Route path="/create-post" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
+
+            {/* Thêm các route khác nếu cần */}
+            <Route path="/search" element={<ProtectedRoute><div>Search Page</div></ProtectedRoute>} />
+            <Route path="/explore" element={<ProtectedRoute><div>Explore Page</div></ProtectedRoute>} />
+            <Route path="/reels" element={<ProtectedRoute><div>Reels Page</div></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute><div>Notifications Page</div></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><div>Dashboard Page</div></ProtectedRoute>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
@@ -50,4 +64,3 @@ function App() {
 }
 
 export default App;
-
