@@ -1,0 +1,245 @@
+# Spring Boot Application Configuration
+spring:
+  application:
+    name: noxtragram-backend
+  
+  # MySQL Database Configuration
+  datasource:
+    url: jdbc:mysql://localhost:3306/noxtragram
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        # SQL comments for debugging
+        use_sql_comments: true
+        # Statistics (disable in production)
+        generate_statistics: false
+        # Show SQL values
+        show_sql: true
+        type: trace
+    
+    # Open-in-view (disable for better performance)
+    open-in-view: false
+  
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+      enabled: true
+  
+  # Redis Configuration (for caching and sessions) - Optional
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 60000
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+  
+  # Mail Configuration (for notifications) - Optional
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_USERNAME:}
+    password: ${EMAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+  error:
+    include-stacktrace: never
+    include-message: always
+    include-binding-errors: always
+
+# Custom Application Properties
+app:
+  # JWT Configuration
+  jwt:
+    secret: ${JWT_SECRET:your-super-secret-jwt-key-change-this-in-production}
+    expiration: 86400000 # 24 hours in milliseconds
+    refresh-expiration: 604800000 # 7 days
+    
+  # File Upload Configuration
+  upload:
+    path: ./uploads
+    max-file-size: 10485760 # 10MB
+    allowed-extensions: jpg,jpeg,png,gif,mp4,mov,avi
+    serve-path: /api/uploads/**
+    
+  # API Documentation
+  api:
+    title: Noxtragram API
+    description: Instagram Clone Backend API
+    version: 1.0.0
+    contact:
+      name: Noxtragram Team
+      email: support@noxtragram.com
+    
+  # Rate Limiting
+  rate-limit:
+    requests-per-minute: 100
+    enabled: true
+
+# Logging Configuration
+logging:
+  level:
+    com.noxtragram: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %highlight(%-5level) - %cyan(%logger{36}) - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{36} - %msg%n"
+  file:
+    name: logs/noxtragram.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+
+# Spring Boot Actuator (Monitoring) - Optional
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /management
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+  info:
+    env:
+      enabled: true
+
+# Profile-specific configurations
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/noxtragram_dev?useSSL=false&serverTimezone=UTC
+    username: root
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: create-drop # Reset database on restart for development
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+  h2:
+    console:
+      enabled: false
+      
+# Development-specific logging
+logging:
+  level:
+    com.noxtragram: TRACE
+    org.springframework.web: DEBUG
+    org.hibernate: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type: TRACE
+
+---
+# Production Profile  
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/noxtragram?useSSL=false&serverTimezone=UTC}
+    username: ${DATABASE_USERNAME:root}
+    password: ${DATABASE_PASSWORD:}
+    hikari:
+      maximum-pool-size: 20
+  jpa:
+    hibernate:
+      ddl-auto: validate # Never auto-create in production
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        show_sql: false
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+
+# Production security
+server:
+  ssl:
+    enabled: ${SSL_ENABLED:false}
+  forward-headers-strategy: framework
+
+# Production logging
+logging:
+  level:
+    com.noxtragram: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+  file:
+    name: /var/log/noxtragram/application.log
+
+---
+# Test Profile
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  h2:
+    console:
+      enabled: true

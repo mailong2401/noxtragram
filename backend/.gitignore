@@ -1,0 +1,108 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# STS
+.apt_generated
+.factorypath
+.springBeans
+.sts4-cache
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.idea_modules/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# VS Code
+.vscode/
+
+# Mac
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Application properties (optional - chỉ ignore nếu có file mẫu)
+application-local.properties
+application-dev.properties
+!application.properties
+!application.example.properties
+
+# Database files (nếu dùng H2 hoặc file-based DB)
+*.db
+*.mv.db
+
+# Coverage reports
+jacoco.exec
+*.jacoco
+coverage/
+
+# Build files
+build/
+gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Spring Boot Specific
+spring-boot-devtools.properties
+
+# Docker
+docker-compose.override.yml
+
+# Kubernetes
+k8s/
+*.yaml
