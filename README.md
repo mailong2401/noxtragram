@@ -119,15 +119,23 @@ The application will be available at `http://localhost:8080/api`
 
 ### Post Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/posts` | Get feed posts |
-| POST | `/api/posts` | Create new post |
-| GET | `/api/posts/{postId}` | Get post by ID |
-| PUT | `/api/posts/{postId}` | Update post |
-| DELETE | `/api/posts/{postId}` | Delete post |
-| POST | `/api/posts/{postId}/like` | Like/unlike post |
-| POST | `/api/posts/{postId}/comment` | Add comment |
+| **Method** | **Endpoint**                       | **Description**                                          |
+| ---------- | ---------------------------------- | -------------------------------------------------------- |
+| **POST**   | `/api/posts`                       | Tạo post mới (ảnh/video + caption + hashtag + location). |
+| **GET**    | `/api/posts/{postId}`              | Lấy chi tiết 1 post theo ID.                             |
+| **GET**    | `/api/posts/user/{userId}`         | Lấy danh sách post của 1 user (có phân trang).           |
+| **GET**    | `/api/posts/feed`                  | Lấy feed từ những user đã follow (có phân trang).        |
+| **GET**    | `/api/posts/hashtag/{hashtag}`     | Lấy danh sách post theo hashtag (có phân trang).         |
+| **GET**    | `/api/posts/saved`                 | Lấy danh sách post đã lưu của user (có phân trang).      |
+| **GET**    | `/api/posts/popular`               | Lấy danh sách post phổ biến (dựa trên số like).          |
+| **PUT**    | `/api/posts/{postId}`              | Cập nhật nội dung post.                                  |
+| **DELETE** | `/api/posts/{postId}`              | Xóa post.                                                |
+| **POST**   | `/api/posts/{postId}/like`         | Like 1 post.                                             |
+| **DELETE** | `/api/posts/{postId}/like`         | Unlike 1 post.                                           |
+| **POST**   | `/api/posts/{postId}/save`         | Save 1 post.                                             |
+| **DELETE** | `/api/posts/{postId}/save`         | Unsave 1 post.                                           |
+| **GET**    | `/api/posts/{postId}/interactions` | Lấy trạng thái tương tác với post (liked/saved).         |
+
 
 ### Chat Endpoints
 
