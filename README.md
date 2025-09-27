@@ -28,60 +28,7 @@ git clone https://github.com/your-username/instagram-backend.git
 cd instagram-backend
 ```
 
-### 2. Configure database
-Create a PostgreSQL database:
-```sql
-CREATE DATABASE instagram_db;
-```
-
-### 3. Configure application properties
-Create `src/main/resources/application-dev.yml`:
-
-```yaml
-server:
-  port: 8080
-  servlet:
-    context-path: /api
-
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/instagram_db
-    username: your-username
-    password: your-password
-    driver-class-name: org.postgresql.Driver
-    
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-        
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
-
-  redis:
-    host: localhost
-    port: 6379
-
-jwt:
-  secret: your-jwt-secret-key-minimum-512-bits
-  expiration: 86400000 # 24 hours
-
-file:
-  upload-dir: ./uploads
-
-logging:
-  level:
-    com.instagram: DEBUG
-    org.springframework.security: DEBUG
-```
-
-### 4. Build and run the application
+### 2. Build and run the application
 ```bash
 # Build the project
 mvn clean install
