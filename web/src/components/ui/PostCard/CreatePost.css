@@ -1,0 +1,625 @@
+/* components/CreatePost/CreatePost.module.css */
+.container {
+    height: 100vh;
+    background-color: #fafafa;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background: white;
+    border-bottom: 1px solid #dbdbdb;
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.headerContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.backBtn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 8px;
+    color: #262626;
+}
+
+.headerTitle {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    color: #262626;
+}
+
+.shareBtn {
+    background: #0095f6;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.shareBtn:disabled {
+    background: #b2dffc;
+    cursor: not-allowed;
+
+}/* Main Content */
+.create-post-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Step 1: Upload */
+.upload-step {
+    width: 100%;
+    max-width: 600px;
+}
+
+.upload-container {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.upload-area {
+    border: 2px dashed #dbdbdb;
+    border-radius: 8px;
+    padding: 60px 40px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 30px;
+}
+
+.upload-area:hover {
+    border-color: #0095f6;
+    background: #fafafa;
+}
+
+.upload-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+}
+
+.upload-area h3 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    color: #262626;
+}
+
+.upload-area p {
+    color: #8e8e8e;
+    margin-bottom: 20px;
+}
+
+.select-files-btn {
+    background: #0095f6;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.select-files-btn:hover {
+    background: #0081d6;
+}
+
+.upload-tips {
+    text-align: left;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #0095f6;
+}
+
+.upload-tips h4 {
+    margin-bottom: 12px;
+    color: #262626;
+}
+
+.upload-tips ul {
+    list-style: none;
+    padding: 0;
+}
+
+.upload-tips li {
+    padding: 4px 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Step 2: Edit */
+.edit-step {
+    width: 100%;
+    max-width: 1000px;
+}
+
+.edit-container {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.media-preview {
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+    position: relative;
+}
+
+.media-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.media-item {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.media-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.prev-btn {
+    left: 15px;
+}
+
+.next-btn {
+    right: 15px;
+}
+
+.media-indicator {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+.edit-controls {
+    padding: 20px;
+    background: white;
+    border-left: 1px solid #dbdbdb;
+}
+
+.filter-section h4 {
+    margin-bottom: 15px;
+    color: #262626;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filter-option {
+    text-align: center;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
+
+.filter-option:hover {
+    background: #f8f9fa;
+}
+
+.filter-option.active {
+    background: #e3f2fd;
+}
+
+.filter-preview {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    margin: 0 auto 8px;
+    overflow: hidden;
+    border: 2px solid transparent;
+}
+
+.filter-option.active .filter-preview {
+    border-color: #0095f6;
+}
+
+.filter-sample {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+}
+
+/* Filter Effects */
+.filter-normal { filter: none; }
+.filter-clarendon { filter: contrast(1.2) saturate(1.35); }
+.filter-gingham { filter: sepia(0.3) contrast(1.1) brightness(1.1); }
+.filter-moon { filter: grayscale(1) contrast(1.1) brightness(1.1); }
+.filter-lark { filter: contrast(0.9) brightness(1.1) saturate(1.2); }
+.filter-reyes { filter: sepia(0.4) contrast(0.9) brightness(1.1); }
+.filter-juno { filter: contrast(1.2) saturate(1.4) hue-rotate(-10deg); }
+.filter-slumber { filter: contrast(0.9) brightness(1.1) saturate(1.2) hue-rotate(350deg); }
+.filter-crema { filter: sepia(0.3) contrast(1.1) brightness(1.1); }
+.filter-ludwig { filter: contrast(1.1) brightness(1.1) saturate(1.3); }
+.filter-aden { filter: hue-rotate(20deg) contrast(0.9) brightness(1.2) saturate(0.85); }
+.filter-perpetua { filter: contrast(1.1) brightness(1.25) saturate(1.1); }
+
+.filter-name {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.filter-option.active .filter-name {
+    color: #0095f6;
+    font-weight: 600;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+}
+
+.edit-btn, .cancel-edit-btn {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.edit-btn {
+    background: #0095f6;
+    color: white;
+}
+
+.cancel-edit-btn {
+    background: #f8f9fa;
+    color: #666;
+}
+
+/* Step 3: Details */
+.details-step {
+    width: 100%;
+    max-width: 900px;
+}
+
+.details-container {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.media-thumbnail {
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.thumbnail-image {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+}
+
+.details-form {
+    padding: 30px;
+    border-left: 1px solid #dbdbdb;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dbdbdb;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+    object-fit: cover;
+}
+
+.username {
+    font-weight: 600;
+    color: #262626;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #262626;
+    display: flex;
+    align-items: center;
+}
+
+.form-group label .icon {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+.caption-input {
+    width: 100%;
+    min-height: 100px;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: none;
+    outline: none;
+}
+
+.caption-input:focus {
+    border-color: #0095f6;
+}
+
+.character-count {
+    text-align: right;
+    font-size: 0.8rem;
+    color: #8e8e8e;
+    margin-top: 4px;
+}
+
+.location-input, .hashtags-input {
+    width: 100%;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.location-input:focus, .hashtags-input:focus {
+    border-color: #0095f6;
+}
+
+.hashtags-tip {
+    font-size: 0.8rem;
+    color: #8e8e8e;
+    margin-top: 4px;
+}
+
+.advanced-options {
+    border-top: 1px solid #dbdbdb;
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.advanced-options h4 {
+    margin-bottom: 15px;
+    color: #262626;
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #0095f6;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.post-btn, .draft-btn {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.post-btn {
+    background: #0095f6;
+    color: white;
+}
+
+.post-btn:disabled {
+    background: #b2dffc;
+    cursor: not-allowed;
+}
+
+.draft-btn {
+    background: #f8f9fa;
+    color: #666;
+    border: 1px solid #dbdbdb;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Login Prompt */
+.login-prompt {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.login-prompt h2 {
+    margin-bottom: 16px;
+    color: #262626;
+}
+
+.login-prompt p {
+    margin-bottom: 24px;
+    color: #8e8e8e;
+}
+
+.login-btn {
+    background: #0095f6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .create-post-content {
+        padding: 10px;
+    }
+    
+    .edit-container,
+    .details-container {
+        grid-template-columns: 1fr;
+        height: 100vh;
+    }
+    
+    .media-preview {
+        min-height: 300px;
+    }
+    
+    .edit-controls,
+    .details-form {
+        border-left: none;
+        border-top: 1px solid #dbdbdb;
+    }
+    
+    .filter-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Custom Scrollbar */
+.details-form::-webkit-scrollbar {
+    width: 6px;
+}
+
+.details-form::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.details-form::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
