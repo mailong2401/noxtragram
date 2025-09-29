@@ -1,0 +1,47 @@
+/* components/ui/PostList/PostList.module.css */
+.postList {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.loading, .error, .emptyMessage, .endMessage {
+  text-align: center;
+  padding: 40px 20px;
+  color: #8e8e8e;
+  font-size: 16px;
+}
+
+.error {
+  color: #ed4956;
+}
+
+.loadMoreBtn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: #0095f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 20px 0;
+  transition: background-color 0.2s;
+}
+
+.loadMoreBtn:hover:not(:disabled) {
+  background: #0081d6;
+}
+
+.loadMoreBtn:disabled {
+  background: #b2dffc;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .postList {
+    padding: 0;
+  }
+}

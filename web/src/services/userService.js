@@ -1,4 +1,4 @@
-import { apiClient } from './api.js';
+import { apiClient, createFormData } from './api.js';
 
 class UserService {
   
@@ -54,13 +54,42 @@ class UserService {
     }
   }
 
+  // services/userService.js - Sửa method uploadProfilePicture
+
   async uploadProfilePicture(file) {
     try {
       const formData = new FormData();
       formData.append('file', file);
       
+      console.log('Uploading profile picture...', file.name);
+      
       const response = await apiClient.post(
-        '/users/upload-profile-picture',
+        '/users/me/profile-picture', // Endpoint đúng
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          timeout: 60000,
+        }
+      );
+      
+      console.log('Upload successful:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Upload error details:', error.response?.data || error.message);
+      throw this.handleError(error);
+    }
+  }
+
+  // Alternative method nếu endpoint khác
+  async uploadProfilePictureAlternative(file) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await apiClient.post(
+        '/users/profile-picture', // Thử endpoint khác nếu cần
         formData,
         {
           headers: {
@@ -208,11 +237,13 @@ class UserService {
   // ============ ERROR HANDLING ============
 
   handleError(error) {
+    console.error('API Error:', error);
+    
     if (error.response) {
       // Backend trả về message trong response
       const message = error.response.data?.message || 
                      error.response.data?.error || 
-                     error.response.statusText;
+                     (typeof error.response.data === 'string' ? error.response.data : error.response.statusText);
       return new Error(`${message} (${error.response.status})`);
     } else if (error.request) {
       return new Error('Network error: Unable to connect to server. Please check your connection.');

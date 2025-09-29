@@ -18,7 +18,6 @@ const Messages = () => {
     const navigate = useNavigate();
     const { conversationId } = useParams();
 
-    // Mock data - trong thực tế sẽ fetch từ API
     useEffect(() => {
         if (!isAuthenticated) return;
 
@@ -35,7 +34,7 @@ const Messages = () => {
                 },
                 lastMessage: {
                     text: 'Hey, how are you doing?',
-                    timestamp: new Date(Date.now() - 300000), // 5 phút trước
+                    timestamp: new Date(Date.now() - 300000),
                     isRead: true,
                     isSender: false
                 },
@@ -49,11 +48,11 @@ const Messages = () => {
                     fullName: 'Mike Wilson',
                     profilePicture: 'https://i.pravatar.cc/150?img=3',
                     isOnline: false,
-                    lastSeen: new Date(Date.now() - 3600000) // 1 giờ trước
+                    lastSeen: new Date(Date.now() - 3600000)
                 },
                 lastMessage: {
                     text: 'Check out this photo! 📸',
-                    timestamp: new Date(Date.now() - 1800000), // 30 phút trước
+                    timestamp: new Date(Date.now() - 1800000),
                     isRead: false,
                     isSender: false
                 },
@@ -71,32 +70,52 @@ const Messages = () => {
                 },
                 lastMessage: {
                     text: 'See you tomorrow!',
-                    timestamp: new Date(Date.now() - 86400000), // 1 ngày trước
+                    timestamp: new Date(Date.now() - 86400000),
                     isRead: true,
                     isSender: true
                 },
                 unreadCount: 0
+            },
+            {
+                id: 4,
+                user: {
+                    id: 5,
+                    username: 'alex_turner',
+                    fullName: 'Alex Turner',
+                    profilePicture: 'https://i.pravatar.cc/150?img=5',
+                    isOnline: true,
+                    lastSeen: new Date()
+                },
+                lastMessage: {
+                    text: 'Are we still meeting today?',
+                    timestamp: new Date(Date.now() - 7200000),
+                    isRead: false,
+                    isSender: false
+                },
+                unreadCount: 1
             }
         ];
 
         setConversations(mockConversations);
         setIsLoading(false);
 
-        // Auto-select first conversation or from URL parameter
+        // Auto-select conversation từ URL hoặc chọn cái đầu tiên
+        let selectedConversation = null;
         if (conversationId) {
-            const conv = mockConversations.find(c => c.id === parseInt(conversationId));
-            if (conv) {
-                setActiveConversation(conv);
-                loadMessages(conv.id);
-            }
-        } else if (mockConversations.length > 0) {
-            setActiveConversation(mockConversations[0]);
-            loadMessages(mockConversations[0].id);
+            selectedConversation = mockConversations.find(c => c.id === parseInt(conversationId));
+        }
+        
+        if (!selectedConversation && mockConversations.length > 0) {
+            selectedConversation = mockConversations[0];
+        }
+        
+        setActiveConversation(selectedConversation);
+        if (selectedConversation) {
+            loadMessages(selectedConversation.id);
         }
     }, [isAuthenticated, conversationId]);
 
     const loadMessages = (conversationId) => {
-        // Mock messages data
         const mockMessages = {
             1: [
                 {
@@ -126,20 +145,6 @@ const Messages = () => {
                     timestamp: new Date(Date.now() - 3300000),
                     isSender: true,
                     isRead: true
-                },
-                {
-                    id: 5,
-                    text: 'That sounds interesting!',
-                    timestamp: new Date(Date.now() - 3200000),
-                    isSender: false,
-                    isRead: true
-                },
-                {
-                    id: 6,
-                    text: 'Hey, how are you doing?',
-                    timestamp: new Date(Date.now() - 300000),
-                    isSender: false,
-                    isRead: true
                 }
             ],
             2: [
@@ -156,13 +161,6 @@ const Messages = () => {
                     timestamp: new Date(Date.now() - 7100000),
                     isSender: false,
                     isRead: true
-                },
-                {
-                    id: 3,
-                    text: 'Check out this photo! 📸',
-                    timestamp: new Date(Date.now() - 1800000),
-                    isSender: false,
-                    isRead: false
                 }
             ],
             3: [
@@ -179,18 +177,20 @@ const Messages = () => {
                     timestamp: new Date(Date.now() - 172700000),
                     isSender: true,
                     isRead: true
-                },
+                }
+            ],
+            4: [
                 {
-                    id: 3,
-                    text: 'Great! See you then.',
-                    timestamp: new Date(Date.now() - 172600000),
+                    id: 1,
+                    text: 'Hey, are we still meeting today?',
+                    timestamp: new Date(Date.now() - 7200000),
                     isSender: false,
-                    isRead: true
+                    isRead: false
                 },
                 {
-                    id: 4,
-                    text: 'See you tomorrow!',
-                    timestamp: new Date(Date.now() - 86400000),
+                    id: 2,
+                    text: 'Yes, 2 PM at the usual place!',
+                    timestamp: new Date(Date.now() - 3600000),
                     isSender: true,
                     isRead: true
                 }
@@ -214,7 +214,6 @@ const Messages = () => {
 
         setIsSending(true);
 
-        // Mock sending message
         const newMsg = {
             id: messages.length + 1,
             text: newMessage,
@@ -226,7 +225,7 @@ const Messages = () => {
         setMessages(prev => [...prev, newMsg]);
         setNewMessage('');
 
-        // Simulate reply after 1-3 seconds
+        // Simulate reply
         setTimeout(() => {
             const replyMsg = {
                 id: messages.length + 2,
@@ -283,11 +282,11 @@ const Messages = () => {
 
     if (!isAuthenticated) {
         return (
-            <div className="messages-container">
-                <div className="login-prompt">
+            <div className={styles.container}>
+                <div className={styles.loginPrompt}>
                     <h2>Messages</h2>
                     <p>Please log in to view your messages</p>
-                    <button onClick={() => navigate('/login')} className="login-btn">
+                    <button onClick={() => navigate('/login')} className={styles.loginBtn}>
                         Log In
                     </button>
                 </div>
@@ -303,9 +302,7 @@ const Messages = () => {
                     <button className={styles.backBtn} onClick={() => navigate('/')}>
                         <span>←</span>
                     </button>
-                    <h1 className={styles.headerTitle}>
-                        {activeConversation ? activeConversation.user.username : 'Messages'}
-                    </h1>
+                    <h1 className={styles.headerTitle}>Messages</h1>
                     <button className={styles.newChatBtn}>
                         <span>✏️</span>
                     </button>
@@ -313,8 +310,8 @@ const Messages = () => {
             </header>
 
             <div className={styles.content}>
-                {/* Conversations List */}
-                <div className={`${styles.sidebar} ${activeConversation ? styles.collapsed : ''}`}>
+                {/* Conversations List - LUÔN HIỂN THỊ */}
+                <div className={styles.sidebar}>
                     <div className={styles.sidebarHeader}>
                         <h2 className={styles.sidebarTitle}>{user?.username}</h2>
                         <button className={styles.newMessageBtn}>
@@ -363,83 +360,95 @@ const Messages = () => {
                     </div>
                 </div>
 
-                {/* Chat Area */}
-                {activeConversation ? (
-                    <div className={styles.chatArea}>
-                        {/* Chat Header */}
-                        <div className={styles.chatHeader}>
-                            <div className={styles.chatUserInfo}>
-                                <div className={styles.chatAvatar}>
-                                    <img src={activeConversation.user.profilePicture} alt={activeConversation.user.username} />
-                                    {activeConversation.user.isOnline && <span className={styles.onlineIndicator}></span>}
-                                </div>
-                                <div className={styles.chatUserDetails}>
-                                    <span className={styles.username}>{activeConversation.user.username}</span>
-                                    <span className={styles.userStatus}>
-                                        {activeConversation.user.isOnline ? 'Online' : `Last seen ${formatTime(activeConversation.user.lastSeen)}`}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className={styles.chatActions}>
-                                <button className={styles.actionBtn}>
-                                    <span>📞</span>
-                                </button>
-                                <button className={styles.actionBtn}>
-                                    <span>ⓘ</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Messages List */}
-                        <div className={styles.messagesList}>
-                            {messages.map(message => (
-                                <div
-                                    key={message.id}
-                                    className={`${styles.message} ${message.isSender ? styles.sent : styles.received}`}
-                                >
-                                    <div className={styles.messageBubble}>
-                                        <p className={styles.messageText}>{message.text}</p>
-                                        <span className={styles.messageTime}>{formatTime(message.timestamp)}</span>
+                {/* Chat Area - LUÔN HIỂN THỊ */}
+                <div className={styles.chatArea}>
+                    {activeConversation ? (
+                        <>
+                            {/* Chat Header */}
+                            <div className={styles.chatHeader}>
+                                <div className={styles.chatUserInfo}>
+                                    <div className={styles.chatAvatar}>
+                                        <img src={activeConversation.user.profilePicture} alt={activeConversation.user.username} />
+                                        {activeConversation.user.isOnline && <span className={styles.onlineIndicator}></span>}
+                                    </div>
+                                    <div className={styles.chatUserDetails}>
+                                        <span className={styles.username}>{activeConversation.user.username}</span>
+                                        <span className={styles.userStatus}>
+                                            {activeConversation.user.isOnline ? 'Online' : `Last seen ${formatTime(activeConversation.user.lastSeen)}`}
+                                        </span>
                                     </div>
                                 </div>
-                            ))}
-                            <div ref={messagesEndRef} />
-                        </div>
-
-                        {/* Message Input */}
-                        <form onSubmit={handleSendMessage} className={styles.messageInputContainer}>
-                            <div className={styles.inputWrapper}>
-                                <button type="button" className={styles.attachmentBtn}>
-                                    <span>📎</span>
-                                </button>
-                                <input
-                                    type="text"
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    placeholder="Message..."
-                                    className={styles.messageInput}
-                                    disabled={isSending}
-                                />
-                                <button
-                                    type="submit"
-                                    className={styles.sendBtn}
-                                    disabled={!newMessage.trim() || isSending}
-                                >
-                                    {isSending ? '⏳' : '➤'}
-                                </button>
+                                <div className={styles.chatActions}>
+                                    <button className={styles.actionBtn}>
+                                        <span>📞</span>
+                                    </button>
+                                    <button className={styles.actionBtn}>
+                                        <span>ⓘ</span>
+                                    </button>
+                                </div>
                             </div>
-                        </form>
-                    </div>
-                ) : (
-                    <div className={styles.noConversation}>
-                        <div className={styles.emptyState}>
-                            <span className={styles.emptyStateIcon}>💬</span>
-                            <h3>Your Messages</h3>
-                            <p>Send private messages to a friend or group.</p>
-                            <button className={styles.startChatBtn}>Send Message</button>
+
+                            {/* Messages List */}
+                            <div className={styles.messagesList}>
+                                {messages.length > 0 ? (
+                                    <>
+                                        {messages.map(message => (
+                                            <div
+                                                key={message.id}
+                                                className={`${styles.message} ${message.isSender ? styles.sent : styles.received}`}
+                                            >
+                                                <div className={styles.messageBubble}>
+                                                    <p className={styles.messageText}>{message.text}</p>
+                                                    <span className={styles.messageTime}>{formatTime(message.timestamp)}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <div ref={messagesEndRef} />
+                                    </>
+                                ) : (
+                                    <div className={styles.emptyChat}>
+                                        <span className={styles.emptyChatIcon}>💬</span>
+                                        <p>No messages yet</p>
+                                        <p>Start a conversation by sending a message!</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Message Input */}
+                            <form onSubmit={handleSendMessage} className={styles.messageInputContainer}>
+                                <div className={styles.inputWrapper}>
+                                    <button type="button" className={styles.attachmentBtn}>
+                                        <span>📎</span>
+                                    </button>
+                                    <input
+                                        type="text"
+                                        value={newMessage}
+                                        onChange={(e) => setNewMessage(e.target.value)}
+                                        placeholder="Message..."
+                                        className={styles.messageInput}
+                                        disabled={isSending}
+                                    />
+                                    <button
+                                        type="submit"
+                                        className={styles.sendBtn}
+                                        disabled={!newMessage.trim() || isSending}
+                                    >
+                                        {isSending ? '⏳' : '➤'}
+                                    </button>
+                                </div>
+                            </form>
+                        </>
+                    ) : (
+                        <div className={styles.noConversationSelected}>
+                            <div className={styles.emptyState}>
+                                <span className={styles.emptyStateIcon}>💬</span>
+                                <h3>Your Messages</h3>
+                                <p>Select a conversation to start messaging</p>
+                                <p>Or start a new conversation with someone!</p>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

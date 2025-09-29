@@ -1,90 +1,130 @@
-/* components/layout/Sidebar/Sidebar.css */
-
+/* Sidebar.css */
 .sidebar {
   position: fixed;
   left: 0;
   top: 0;
   height: 100vh;
   width: 16rem;
-  background-color: white; /* Giữ màu trắng */
+  background-color: white;
   border-right: 1px solid #e5e7eb;
   padding: 1rem;
   z-index: 50;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-header {
   margin-bottom: 2rem;
   padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .sidebar-title {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #1f2937; /* Màu đen/xám đậm */
+  color: #1f2937;
   text-align: center;
+  margin: 0;
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  flex: 1;
 }
 
 .sidebar-menu-item {
   display: flex;
   align-items: center;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   border-radius: 0.75rem;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   text-decoration: none;
-  color: #374151; /* Màu chữ xám đậm */
-  gap: 10px;
+  color: #374151;
+  gap: 12px;
+  border: 1px solid transparent;
 }
 
 .sidebar-menu-item:hover {
-  background-color: #f3f4f6; /* Màu nền hover xám nhạt */
-  transform: translateX(2px);
-  color: #1f2937; /* Màu chữ đậm hơn khi hover */
+  background-color: #f3f4f6;
+  transform: translateX(4px);
+  color: #1f2937;
 }
 
 .sidebar-menu-item.active {
-  background-color: #eff6ff; /* Màu nền active xanh nhạt */
-  color: #2563eb; /* Màu chữ xanh khi active */
+  background-color: #eff6ff;
+  color: #2563eb;
   font-weight: 600;
+  border-color: #dbeafe;
 }
 
 .sidebar-menu-item.active:hover {
-  background-color: #dbeafe; /* Màu nền xanh đậm hơn khi hover */
+  background-color: #dbeafe;
 }
 
 .sidebar-icon {
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s;
 }
 
 .sidebar-icon img {
-  width: 24px;
-  height: 24px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  filter: brightness(0); /* Đảm bảo icon màu đen */
+  filter: brightness(0) saturate(100%);
+  transition: filter 0.2s;
 }
 
 .sidebar-menu-item:hover .sidebar-icon img {
-  filter: brightness(0) saturate(100%); /* Giữ màu đen khi hover */
+  filter: brightness(0) saturate(100%) opacity(0.8);
 }
 
 .sidebar-menu-item.active .sidebar-icon img {
-  filter: brightness(0) saturate(100%) invert(33%) sepia(93%) saturate(7481%) hue-rotate(216deg) brightness(94%) contrast(91%); /* Chuyển icon sang màu xanh khi active */
+  filter: brightness(0) saturate(100%) invert(39%) sepia(96%) saturate(747%) hue-rotate(202deg) brightness(97%) contrast(91%);
 }
 
 .sidebar-menu-text {
   font-weight: 500;
   font-size: 0.875rem;
   transition: color 0.2s;
+  white-space: nowrap;
+}
+
+/* Special styles for Logout button */
+.sidebar-menu-item:last-child {
+  margin-top: auto;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 1rem;
+}
+
+.sidebar-menu-item:last-child:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.sidebar-menu-item:last-child:hover .sidebar-icon img {
+  filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(7495%) hue-rotate(350deg) brightness(94%) contrast(89%);
+}
+
+.sidebar-menu-item:last-child.active {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.sidebar-menu-item:last-child.active .sidebar-icon img {
+  filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(7495%) hue-rotate(350deg) brightness(94%) contrast(89%);
 }
 
 /* Scrollbar styling */
@@ -107,10 +147,10 @@
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .sidebar {
-    width: 4rem;
-    padding: 0.5rem;
+    width: 5rem;
+    padding: 0.75rem 0.5rem;
   }
   
   .sidebar-header {
@@ -119,7 +159,10 @@
   }
   
   .sidebar-title {
-    display: none;
+    font-size: 1rem;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
   }
   
   .sidebar-menu-text {
@@ -129,7 +172,31 @@
   .sidebar-menu-item {
     justify-content: center;
     padding: 0.75rem;
-    gap: 0;
+  }
+  
+  .sidebar-nav {
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 4rem;
+    padding: 0.5rem;
+  }
+  
+  .sidebar-header {
+    padding: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .sidebar-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .sidebar-menu-item {
+    padding: 0.5rem;
   }
 }
 
@@ -139,9 +206,12 @@
     height: auto;
     bottom: 0;
     top: auto;
+    left: 0;
+    right: 0;
     border-right: none;
     border-top: 1px solid #e5e7eb;
     padding: 0.5rem;
+    z-index: 100;
   }
   
   .sidebar-header {
@@ -167,6 +237,16 @@
     font-size: 0.75rem;
     text-align: center;
   }
+  
+  .sidebar-menu-item:last-child {
+    margin-top: 0;
+    border-top: none;
+    padding-top: 0.5rem;
+  }
+  
+  .sidebar-menu-item:hover {
+    transform: translateY(-2px);
+  }
 }
 
 /* Animation for sidebar entry */
@@ -185,8 +265,66 @@
   animation: slideInLeft 0.3s ease-out;
 }
 
-/* Xóa dark mode support hoặc sửa thành light mode */
-/* Dark mode support - ĐÃ XÓA hoặc SỬA THÀNH LIGHT MODE */
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .sidebar {
+    background-color: #1f2937;
+    border-right-color: #374151;
+  }
+  
+  .sidebar-header {
+    border-bottom-color: #374151;
+  }
+  
+  .sidebar-title {
+    color: #f9fafb;
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .sidebar-menu-item {
+    color: #d1d5db;
+  }
+  
+  .sidebar-menu-item:hover {
+    background-color: #374151;
+    color: #f9fafb;
+  }
+  
+  .sidebar-menu-item.active {
+    background-color: #1e40af;
+    color: #ffffff;
+    border-color: #3b82f6;
+  }
+  
+  .sidebar-menu-item.active:hover {
+    background-color: #1e3a8a;
+  }
+  
+  .sidebar-menu-item:last-child:hover {
+    background-color: #7f1d1d;
+    color: #fecaca;
+  }
+  
+  .sidebar-menu-item:last-child.active {
+    background-color: #7f1d1d;
+    color: #fecaca;
+  }
+  
+  .sidebar-icon img {
+    filter: brightness(0) invert(1) opacity(0.8);
+  }
+  
+  .sidebar-menu-item:hover .sidebar-icon img {
+    filter: brightness(0) invert(1);
+  }
+  
+  .sidebar-menu-item.active .sidebar-icon img {
+    filter: brightness(0) invert(1);
+  }
+}
 
 /* Focus styles for accessibility */
 .sidebar-menu-item:focus {
@@ -202,12 +340,14 @@
 @media (prefers-contrast: high) {
   .sidebar {
     border-right-width: 2px;
-    border-right-color: #000;
   }
   
   .sidebar-menu-item.active {
-    border: 2px solid #2563eb;
-    background-color: #e0f2fe;
+    border: 2px solid #0000ff;
+  }
+  
+  .sidebar-menu-item:last-child.active {
+    border: 2px solid #ff0000;
   }
 }
 
@@ -224,31 +364,15 @@
   .sidebar-menu-item:hover {
     transform: none;
   }
+  
+  .sidebar-menu-item:hover .sidebar-icon {
+    transform: none;
+  }
 }
 
-/* Thêm style cho trạng thái mặc định của icon */
-.sidebar-icon svg {
-  color: #374151; /* Màu icon xám đậm */
-  transition: color 0.2s ease-in-out;
-}
-
-.sidebar-menu-item:hover .sidebar-icon svg {
-  color: #1f2937; /* Màu icon đen khi hover */
-}
-
-.sidebar-menu-item.active .sidebar-icon svg {
-  color: #2563eb; /* Màu icon xanh khi active */
-}
-
-/* Đảm bảo text luôn có màu phù hợp */
-.sidebar-menu-item {
-  color: #374151;
-}
-
-.sidebar-menu-item:hover {
-  color: #1f2937;
-}
-
-.sidebar-menu-item.active {
-  color: #2563eb;
+/* Print styles */
+@media print {
+  .sidebar {
+    display: none;
+  }
 }

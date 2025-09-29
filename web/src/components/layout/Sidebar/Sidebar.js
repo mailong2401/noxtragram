@@ -1,4 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext'; // Import auth context
 import './Sidebar.css';
 
 // import icons
@@ -16,6 +17,8 @@ import logoutIcon from '../../../assets/icons/logout.png';
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth(); // Get logout function from auth context
 
   const menuItems = [
     { name: 'Home', path: '/', icon: homeIcon },
@@ -28,10 +31,14 @@ const Sidebar = () => {
     { name: 'Dashboard', path: '/dashboard', icon: dashboardIcon },
     { name: 'Profile', path: '/profile', icon: profileIcon },
     { name: 'Setting', path: '/setting', icon: settingIcon },
-    { name: 'Logout', path: '/logout', icon: logoutIcon },
   ];
 
   const isActive = (path) => location.pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div className="sidebar">
@@ -52,10 +59,21 @@ const Sidebar = () => {
             <span className="sidebar-menu-text">{item.name}</span>
           </Link>
         ))}
+        
+        {/* Logout button with custom handler */}
+        <button 
+          onClick={handleLogout}
+          className="sidebar-menu-item"
+          style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}
+        >
+          <div className="sidebar-icon">
+            <img src={logoutIcon} alt="Logout icon" />
+          </div>
+          <span className="sidebar-menu-text">Logout</span>
+        </button>
       </nav>
     </div>
   );
 };
 
 export default Sidebar;
-

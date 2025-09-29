@@ -35,7 +35,7 @@ public interface UserService {
   void resetPassword(PasswordResetRequestDTO passwordResetDTO);
 
   // Profile Management
-  UserResponseDTO uploadProfilePicture(Long userId, MultipartFile file);
+  UserResponseDTO uploadProfilePicture(String username, MultipartFile file);
 
   UserResponseDTO removeProfilePicture(Long userId);
 

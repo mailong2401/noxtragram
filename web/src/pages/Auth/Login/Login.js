@@ -28,6 +28,18 @@ const Login = () => {
     return () => clearError();
   }, [clearError]);
 
+  // Tạo particles
+  const renderParticles = () => {
+    return (
+      <>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+      </>
+    );
+  };
+
   const validateForm = () => {
     const errors = {};
     
@@ -89,6 +101,8 @@ const Login = () => {
 
   return (
     <div className="login-container">
+      {renderParticles()}
+      
       <div className="login-card">
         <div className="login-header">
           <h1 className="login-title">Noxtragram</h1>

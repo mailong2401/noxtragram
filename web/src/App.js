@@ -5,9 +5,10 @@ import MainLayout from './layouts/MainLayout';
 import Home from './pages/Home/Home';
 import Profile from './pages/Profile/Profile';
 import Message from './pages/Messages/Messages';
-import CreatePost from './components/ui/PostCard/CreatePost';
+import CreatePost from './components/ui/CreatePost/CreatePost';
 import Login from './pages/Auth/Login/Login';
 import Register from './pages/Auth/Register/Register';
+import PostDetail from './pages/PostDetail/PostDetail';
 import './App.css';
 
 // Protected Route Component với Layout
@@ -54,6 +55,7 @@ function App() {
             <Route path="/reels" element={<ProtectedRoute><div>Reels Page</div></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><div>Notifications Page</div></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><div>Dashboard Page</div></ProtectedRoute>} />
+            <Route path="/post/:postId" element={<ProtectedRoute><PostDetail /></ProtectedRoute>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

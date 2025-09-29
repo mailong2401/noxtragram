@@ -265,7 +265,7 @@ public class FileStorageService {
    * Lấy URL để truy cập file
    */
   public String getFileUrl(String fileName, String category) {
-    return "/api/uploads/" + category + "/" + fileName;
+    return "http://localhost:8080/api/uploads/" + category + "/" + fileName;
   }
 
   /**

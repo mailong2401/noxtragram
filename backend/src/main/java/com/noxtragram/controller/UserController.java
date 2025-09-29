@@ -114,11 +114,13 @@ public class UserController {
 
   // 📸 PROFILE PICTURE
 
-  @PostMapping("/{userId}/profile-picture")
+  @PostMapping("/me/profile-picture")
   public ResponseEntity<UserResponseDTO> uploadProfilePicture(
-      @PathVariable Long userId,
-      @RequestParam("file") MultipartFile file) {
-    UserResponseDTO userResponseDTO = userService.uploadProfilePicture(userId, file);
+      @RequestParam("file") MultipartFile file,
+      Authentication authentication) {
+    // Lấy username từ token (hoặc principal)
+    String username = authentication.getName();
+    UserResponseDTO userResponseDTO = userService.uploadProfilePicture(username, file);
     return ResponseEntity.ok(userResponseDTO);
   }
 

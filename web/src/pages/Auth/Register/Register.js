@@ -1,3 +1,4 @@
+// components/Register/Register.js
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -28,6 +29,18 @@ const Register = () => {
   useEffect(() => {
     return () => clearError();
   }, [clearError]);
+
+  // Tạo bubbles animation
+  const renderBubbles = () => {
+    return (
+      <>
+        <div className="bubble"></div>
+        <div className="bubble"></div>
+        <div className="bubble"></div>
+        <div className="bubble"></div>
+      </>
+    );
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -107,6 +120,8 @@ const Register = () => {
 
   return (
     <div className="register-container">
+      {renderBubbles()}
+      
       <div className="register-card">
         <div className="register-header">
           <h1 className="register-title">Noxtragram</h1>

@@ -1,12 +1,12 @@
-/* components/CreatePost/CreatePost.module.css */
-.container {
-    height: 100vh;
+/* CreatePost.css */
+.create-post-container {
+    min-height: 100vh;
     background-color: #fafafa;
-    display: flex;
-    flex-direction: column;
+    padding: 0;
 }
 
-.header {
+/* Header */
+.create-post-header {
     background: white;
     border-bottom: 1px solid #dbdbdb;
     padding: 12px 16px;
@@ -15,29 +15,37 @@
     z-index: 100;
 }
 
-.headerContent {
+.header-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    max-width: 935px;
+    margin: 0 auto;
 }
 
-.backBtn {
+.back-btn {
     background: none;
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
     padding: 8px;
     color: #262626;
+    border-radius: 50%;
+    transition: background-color 0.2s;
 }
 
-.headerTitle {
+.back-btn:hover {
+    background-color: #f8f9fa;
+}
+
+.header-title {
     font-size: 1.2rem;
     font-weight: 600;
     margin: 0;
     color: #262626;
 }
 
-.shareBtn {
+.share-btn {
     background: #0095f6;
     color: white;
     border: none;
@@ -45,38 +53,42 @@
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
+    transition: background-color 0.2s;
 }
 
-.shareBtn:disabled {
+.share-btn:hover:not(:disabled) {
+    background: #0081d6;
+}
+
+.share-btn:disabled {
     background: #b2dffc;
     cursor: not-allowed;
+}
 
-}/* Main Content */
+/* Content */
 .create-post-content {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    max-width: 935px;
+    margin: 0 auto;
     padding: 20px;
 }
 
 /* Step 1: Upload */
 .upload-step {
-    width: 100%;
-    max-width: 600px;
-}
-
-.upload-container {
     background: white;
+    border: 1px solid #dbdbdb;
     border-radius: 12px;
     padding: 40px;
     text-align: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.upload-container {
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 .upload-area {
     border: 2px dashed #dbdbdb;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 60px 40px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -85,7 +97,7 @@
 
 .upload-area:hover {
     border-color: #0095f6;
-    background: #fafafa;
+    background-color: #fafafa;
 }
 
 .upload-icon {
@@ -95,6 +107,7 @@
 
 .upload-area h3 {
     font-size: 1.5rem;
+    font-weight: 600;
     margin-bottom: 8px;
     color: #262626;
 }
@@ -108,11 +121,11 @@
     background: #0095f6;
     color: white;
     border: none;
-    padding: 12px 24px;
+    padding: 10px 20px;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background-color 0.2s;
 }
 
 .select-files-btn:hover {
@@ -121,10 +134,9 @@
 
 .upload-tips {
     text-align: left;
-    background: #f8f9fa;
+    background: #fafafa;
     padding: 20px;
     border-radius: 8px;
-    border-left: 4px solid #0095f6;
 }
 
 .upload-tips h4 {
@@ -135,6 +147,7 @@
 .upload-tips ul {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
 .upload-tips li {
@@ -145,33 +158,30 @@
 
 /* Step 2: Edit */
 .edit-step {
-    width: 100%;
-    max-width: 1000px;
+    background: white;
+    border: 1px solid #dbdbdb;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 .edit-container {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 20px;
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    min-height: 600px;
 }
 
 .media-preview {
+    flex: 1;
     background: #000;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 500px;
     position: relative;
 }
 
 .media-container {
-    position: relative;
     width: 100%;
     height: 100%;
+    position: relative;
 }
 
 .media-item {
@@ -192,84 +202,80 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
+    background: rgba(255, 255, 255, 0.8);
     border: none;
     width: 40px;
     height: 40px;
     border-radius: 50%;
     cursor: pointer;
     font-size: 1.2rem;
+    font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.nav-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.9);
 }
 
 .nav-btn:disabled {
-    opacity: 0.3;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
 .prev-btn {
-    left: 15px;
+    left: 16px;
 }
 
 .next-btn {
-    right: 15px;
+    right: 16px;
 }
 
 .media-indicator {
     position: absolute;
-    top: 15px;
-    right: 15px;
+    top: 16px;
+    right: 16px;
     background: rgba(0, 0, 0, 0.7);
     color: white;
-    padding: 4px 12px;
+    padding: 4px 8px;
     border-radius: 12px;
     font-size: 0.8rem;
 }
 
 .edit-controls {
+    width: 300px;
     padding: 20px;
-    background: white;
     border-left: 1px solid #dbdbdb;
+    overflow-y: auto;
 }
 
 .filter-section h4 {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
     color: #262626;
 }
 
 .filter-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 12px;
     margin-bottom: 20px;
 }
 
 .filter-option {
-    text-align: center;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 8px;
-    transition: background 0.3s ease;
-}
-
-.filter-option:hover {
-    background: #f8f9fa;
-}
-
-.filter-option.active {
-    background: #e3f2fd;
+    text-align: center;
 }
 
 .filter-preview {
     width: 60px;
     height: 60px;
     border-radius: 8px;
-    margin: 0 auto 8px;
     overflow: hidden;
+    margin: 0 auto 8px;
     border: 2px solid transparent;
+    transition: border-color 0.2s;
 }
 
 .filter-option.active .filter-preview {
@@ -279,22 +285,8 @@
 .filter-sample {
     width: 100%;
     height: 100%;
-    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+    background: linear-gradient(45deg, #666, #999);
 }
-
-/* Filter Effects */
-.filter-normal { filter: none; }
-.filter-clarendon { filter: contrast(1.2) saturate(1.35); }
-.filter-gingham { filter: sepia(0.3) contrast(1.1) brightness(1.1); }
-.filter-moon { filter: grayscale(1) contrast(1.1) brightness(1.1); }
-.filter-lark { filter: contrast(0.9) brightness(1.1) saturate(1.2); }
-.filter-reyes { filter: sepia(0.4) contrast(0.9) brightness(1.1); }
-.filter-juno { filter: contrast(1.2) saturate(1.4) hue-rotate(-10deg); }
-.filter-slumber { filter: contrast(0.9) brightness(1.1) saturate(1.2) hue-rotate(350deg); }
-.filter-crema { filter: sepia(0.3) contrast(1.1) brightness(1.1); }
-.filter-ludwig { filter: contrast(1.1) brightness(1.1) saturate(1.3); }
-.filter-aden { filter: hue-rotate(20deg) contrast(0.9) brightness(1.2) saturate(0.85); }
-.filter-perpetua { filter: contrast(1.1) brightness(1.25) saturate(1.1); }
 
 .filter-name {
     font-size: 0.8rem;
@@ -309,43 +301,45 @@
 .edit-actions {
     display: flex;
     gap: 10px;
-    flex-direction: column;
 }
 
-.edit-btn, .cancel-edit-btn {
-    padding: 12px;
+.edit-btn {
+    flex: 1;
+    background: #0095f6;
+    color: white;
     border: none;
+    padding: 10px;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
 }
 
-.edit-btn {
-    background: #0095f6;
-    color: white;
-}
-
 .cancel-edit-btn {
+    flex: 1;
     background: #f8f9fa;
-    color: #666;
+    color: #262626;
+    border: 1px solid #dbdbdb;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 /* Step 3: Details */
 .details-step {
-    width: 100%;
-    max-width: 900px;
+    background: white;
+    border: 1px solid #dbdbdb;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 .details-container {
-    display: grid;
-    grid-template-columns: 400px 1fr;
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    min-height: 600px;
 }
 
 .media-thumbnail {
+    flex: 1;
     background: #000;
     display: flex;
     align-items: center;
@@ -355,20 +349,23 @@
 
 .thumbnail-image {
     max-width: 100%;
-    max-height: 400px;
+    max-height: 100%;
     object-fit: contain;
 }
 
 .details-form {
-    padding: 30px;
+    width: 400px;
+    padding: 20px;
     border-left: 1px solid #dbdbdb;
+    overflow-y: auto;
 }
 
 .user-info {
     display: flex;
     align-items: center;
+    gap: 12px;
     margin-bottom: 20px;
-    padding-bottom: 15px;
+    padding-bottom: 16px;
     border-bottom: 1px solid #dbdbdb;
 }
 
@@ -376,7 +373,6 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    margin-right: 12px;
     object-fit: cover;
 }
 
@@ -394,28 +390,21 @@
     margin-bottom: 8px;
     font-weight: 600;
     color: #262626;
-    display: flex;
-    align-items: center;
-}
-
-.form-group label .icon {
-    margin-right: 8px;
-    font-size: 1.1rem;
 }
 
 .caption-input {
     width: 100%;
-    min-height: 100px;
     border: 1px solid #dbdbdb;
     border-radius: 8px;
     padding: 12px;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 100px;
     font-family: inherit;
-    font-size: 0.95rem;
-    resize: none;
-    outline: none;
 }
 
 .caption-input:focus {
+    outline: none;
     border-color: #0095f6;
 }
 
@@ -426,16 +415,18 @@
     margin-top: 4px;
 }
 
-.location-input, .hashtags-input {
+.location-input,
+.hashtags-input {
     width: 100%;
     border: 1px solid #dbdbdb;
     border-radius: 8px;
     padding: 12px;
-    font-size: 0.95rem;
-    outline: none;
+    font-size: 0.9rem;
 }
 
-.location-input:focus, .hashtags-input:focus {
+.location-input:focus,
+.hashtags-input:focus {
+    outline: none;
     border-color: #0095f6;
 }
 
@@ -452,21 +443,21 @@
 }
 
 .advanced-options h4 {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
     color: #262626;
 }
 
 .option-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
 .switch {
     position: relative;
     display: inline-block;
-    width: 50px;
+    width: 44px;
     height: 24px;
 }
 
@@ -505,7 +496,7 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-    transform: translateX(26px);
+    transform: translateX(20px);
 }
 
 .action-buttons {
@@ -514,10 +505,12 @@ input:checked + .slider:before {
     margin-top: 30px;
 }
 
-.post-btn, .draft-btn {
-    flex: 1;
-    padding: 14px;
+.post-btn {
+    flex: 2;
+    background: #0095f6;
+    color: white;
     border: none;
+    padding: 12px;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
@@ -527,9 +520,8 @@ input:checked + .slider:before {
     gap: 8px;
 }
 
-.post-btn {
-    background: #0095f6;
-    color: white;
+.post-btn:hover:not(:disabled) {
+    background: #0081d6;
 }
 
 .post-btn:disabled {
@@ -538,9 +530,18 @@ input:checked + .slider:before {
 }
 
 .draft-btn {
+    flex: 1;
     background: #f8f9fa;
-    color: #666;
+    color: #262626;
     border: 1px solid #dbdbdb;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.draft-btn:hover {
+    background: #e9ecef;
 }
 
 .spinner {
@@ -560,7 +561,11 @@ input:checked + .slider:before {
 /* Login Prompt */
 .login-prompt {
     text-align: center;
-    padding: 40px 20px;
+    padding: 100px 20px;
+    background: white;
+    border-radius: 12px;
+    margin: 40px auto;
+    max-width: 400px;
 }
 
 .login-prompt h2 {
@@ -586,40 +591,167 @@ input:checked + .slider:before {
 /* Responsive Design */
 @media (max-width: 768px) {
     .create-post-content {
-        padding: 10px;
+        padding: 0;
+    }
+    
+    .upload-step {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
     }
     
     .edit-container,
     .details-container {
-        grid-template-columns: 1fr;
-        height: 100vh;
+        flex-direction: column;
+        min-height: auto;
     }
     
     .media-preview {
-        min-height: 300px;
+        height: 400px;
     }
     
     .edit-controls,
     .details-form {
+        width: 100%;
         border-left: none;
         border-top: 1px solid #dbdbdb;
+    }
+    
+    .media-thumbnail {
+        height: 300px;
+    }
+    
+    .filter-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .create-post-header {
+        padding: 10px 12px;
+    }
+    
+    .header-title {
+        font-size: 1.1rem;
+    }
+    
+    .upload-area {
+        padding: 40px 20px;
+    }
+    
+    .upload-icon {
+        font-size: 3rem;
     }
     
     .filter-grid {
         grid-template-columns: repeat(4, 1fr);
     }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
 }
 
-/* Custom Scrollbar */
-.details-form::-webkit-scrollbar {
-    width: 6px;
-}
-
-.details-form::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.details-form::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .create-post-container {
+        background-color: #000;
+    }
+    
+    .create-post-header {
+        background: #000;
+        border-color: #363636;
+    }
+    
+    .back-btn {
+        color: #fff;
+    }
+    
+    .back-btn:hover {
+        background-color: #363636;
+    }
+    
+    .header-title {
+        color: #fff;
+    }
+    
+    .upload-step,
+    .edit-step,
+    .details-step,
+    .login-prompt {
+        background: #000;
+        border-color: #363636;
+        color: #fff;
+    }
+    
+    .upload-area {
+        border-color: #363636;
+        background: #111;
+    }
+    
+    .upload-area:hover {
+        border-color: #0095f6;
+        background: #1a1a1a;
+    }
+    
+    .upload-area h3 {
+        color: #fff;
+    }
+    
+    .upload-area p {
+        color: #a8a8a8;
+    }
+    
+    .upload-tips {
+        background: #111;
+    }
+    
+    .upload-tips h4 {
+        color: #fff;
+    }
+    
+    .upload-tips li {
+        color: #a8a8a8;
+    }
+    
+    .edit-controls,
+    .details-form {
+        border-color: #363636;
+        background: #000;
+    }
+    
+    .filter-section h4,
+    .advanced-options h4,
+    .form-group label,
+    .username {
+        color: #fff;
+    }
+    
+    .caption-input,
+    .location-input,
+    .hashtags-input {
+        background: #111;
+        border-color: #363636;
+        color: #fff;
+    }
+    
+    .caption-input:focus,
+    .location-input:focus,
+    .hashtags-input:focus {
+        border-color: #0095f6;
+    }
+    
+    .draft-btn {
+        background: #363636;
+        border-color: #363636;
+        color: #fff;
+    }
+    
+    .draft-btn:hover {
+        background: #404040;
+    }
+    
+    .option-item span {
+        color: #fff;
+    }
 }

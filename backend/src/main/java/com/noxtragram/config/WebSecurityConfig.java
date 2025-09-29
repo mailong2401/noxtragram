@@ -41,13 +41,15 @@ public class WebSecurityConfig {
                 "/users/login",
                 "/users/register",
                 "/users/check-email",
-                "/users/check-username")
+                "/users/check-username",
+                "/api/uploads/**")
             .permitAll()
 
             // Protected endpoints
             .requestMatchers(
+                "/users/me/**",
                 "/users/me",
-                "/users/*/profile-picture",
+                "/users/me/profile-picture",
                 "/users/*/follow/*",
                 "/posts/**",
                 "/comments/**")

@@ -178,13 +178,14 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public UserResponseDTO uploadProfilePicture(Long userId, MultipartFile file) {
-    User user = findEntityById(userId);
+  public UserResponseDTO uploadProfilePicture(String username, MultipartFile file) {
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     String fileName = fileStorageService.storeFile(file, "profiles");
     String oldProfilePicture = user.getProfilePicture();
 
-    user.setProfilePicture(fileName);
+    user.setProfilePicture(fileStorageService.getFileUrl(fileName, "profiles"));
     user.setUpdatedAt(LocalDateTime.now());
 
     User updatedUser = userRepository.save(user);

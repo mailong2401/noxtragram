@@ -134,6 +134,11 @@ const Profile = () => {
         }
     };
 
+    // Hàm xử lý khi click vào post trong grid - CHUYỂN SANG TRANG CHI TIẾT
+    const handlePostClick = (post) => {
+        navigate(`/post/${post.id}`);
+    };
+
     if (!isAuthenticated) {
         return (
             <div className="profile-container">
@@ -267,7 +272,12 @@ const Profile = () => {
 
             {/* Content based on active tab */}
             {activeTab === 'posts' && (
-                <PostsGrid posts={posts} isLoading={isLoading} getImageUrlWithToken={getImageUrlWithToken} />
+                <PostsGrid
+                    posts={posts}
+                    isLoading={isLoading}
+                    getImageUrlWithToken={getImageUrlWithToken}
+                    onPostClick={handlePostClick} // Sử dụng hàm navigate
+                />
             )}
 
             {activeTab === 'followers' && (
@@ -293,7 +303,7 @@ const Profile = () => {
 };
 
 // Component cho grid posts
-const PostsGrid = ({ posts, isLoading, getImageUrlWithToken }) => {
+const PostsGrid = ({ posts, isLoading, getImageUrlWithToken, onPostClick }) => {
     if (isLoading) {
         return (
             <div className="profile-loading">
@@ -316,7 +326,11 @@ const PostsGrid = ({ posts, isLoading, getImageUrlWithToken }) => {
     return (
         <div className="posts-grid">
             {posts.map(post => (
-                <div key={post.id} className="post-item">
+                <div 
+                    key={post.id} 
+                    className="post-item"
+                    onClick={() => onPostClick(post)}
+                >
                     <img 
                         src={getImageUrlWithToken(post.imageUrl) || 'https://picsum.photos/300/300'} 
                         alt={`Post ${post.id}`}
@@ -324,7 +338,12 @@ const PostsGrid = ({ posts, isLoading, getImageUrlWithToken }) => {
                             e.target.src = 'https://picsum.photos/300/300';
                         }}
                     />
-                    {post.type === 'VIDEO' && (
+                    {post.imageUrls && post.imageUrls.length > 1 && (
+                        <div className="multiple-images-indicator">
+                            <span className="icon">🖼️</span>
+                        </div>
+                    )}
+                    {post.videoUrl && (
                         <div className="video-indicator">
                             <span className="icon">▶️</span>
                         </div>

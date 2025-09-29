@@ -4,7 +4,7 @@ import axios from 'axios';
 // Tạo instance axios với config mặc định
 const apiClient = axios.create({
   baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8080/api',
-  timeout: 10000,
+  timeout: 30000, // Tăng timeout cho upload file
   headers: {
     'Content-Type': 'application/json',
   },

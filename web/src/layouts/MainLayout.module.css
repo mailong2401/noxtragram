@@ -1,65 +1,163 @@
-/* layouts/MainLayout.module.css */
+/* MainLayout.module.css */
 .layout {
     display: flex;
     min-height: 100vh;
+    background-color: #fafafa;
 }
 
 .main {
     flex: 1;
-    margin-left: 16rem; /* 64 * 0.25rem = 16rem tương đương 256px */
-    padding: 2rem;
+    margin-left: 16rem; /* 256px - same as sidebar width */
+    padding: 0;
     min-height: 100vh;
-    overflow: auto;
-    background-color: #ffffff;
+    overflow-x: hidden;
+    transition: margin-left 0.3s ease;
 }
 
 /* Responsive Design */
 @media (max-width: 1024px) {
     .main {
-        margin-left: 5rem;
-        padding: 1.5rem;
+        margin-left: 5rem; /* 80px - collapsed sidebar width */
     }
 }
 
 @media (max-width: 768px) {
-    .layout {
-        flex-direction: column;
-    }
-    
     .main {
-        margin-left: 0;
-        margin-top: 4rem;
-        padding: 1rem;
-        min-height: calc(100vh - 4rem);
+        margin-left: 4rem; /* 64px - smaller collapsed sidebar */
     }
 }
 
 @media (max-width: 480px) {
-    .main {
-        padding: 0.75rem;
-        margin-top: 3.5rem;
-        min-height: calc(100vh - 3.5rem);
+    .layout {
+        flex-direction: column;
+        padding-bottom: 4rem; /* Space for bottom navigation */
     }
+    
+    .main {
+        margin-left: 0;
+        margin-bottom: 4rem; /* Space for bottom navigation */
+        padding-bottom: 1rem;
+        min-height: calc(100vh - 4rem);
+    }
+}
+
+/* Content wrapper for consistent spacing */
+.mainContent {
+    max-width: 935px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
+    .layout {
+        background-color: #000;
+    }
+    
     .main {
-        background-color: #ffffff;
-        color: #ffffff;
+        background-color: #000;
     }
 }
 
 /* High contrast mode */
 @media (prefers-contrast: high) {
-    .main {
-        border-left: 2px solid #ffffff;
+    .layout {
+        border-left: 2px solid #000;
     }
 }
 
-/* Reduced motion */
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-    .layout {
+    .main {
         transition: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .layout {
+        display: block;
+    }
+    
+    .main {
+        margin-left: 0;
+    }
+}
+
+/* Scrollbar styling for main content */
+.main::-webkit-scrollbar {
+    width: 8px;
+}
+
+.main::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.main::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.main::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Dark mode scrollbar */
+@media (prefers-color-scheme: dark) {
+    .main::-webkit-scrollbar-track {
+        background: #2d2d2d;
+    }
+    
+    .main::-webkit-scrollbar-thumb {
+        background: #555;
+    }
+    
+    .main::-webkit-scrollbar-thumb:hover {
+        background: #666;
+    }
+}
+
+/* Safe area support for notched devices */
+@supports (padding: max(0px)) {
+    .layout {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+    
+    .main {
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+}
+
+/* Animation for page transitions */
+.main {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Reduced motion alternative */
+@media (prefers-reduced-motion: reduce) {
+    .main {
+        animation: fadeIn 0.4s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
     }
 }
