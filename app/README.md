@@ -40,7 +40,7 @@ Một ứng dụng mạng xã hội được xây dựng với Flutter cho front
 - [ ] Push Notifications
 - [ ] Video Posts
 - [ ] Direct Message với hình ảnh
-- [ ] Hashtag & Explore
+- [ ] Explore
 - [ ] Analytics
 
 ## 🏗️ Kiến trúc hệ thống

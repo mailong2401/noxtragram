@@ -1,0 +1,392 @@
+.search-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #000000;
+  min-height: 100vh;
+  color: #ffffff;
+}
+
+/* Search Header */
+.search-header {
+  position: sticky;
+  top: 0;
+  background: #000000;
+  padding: 20px 0;
+  border-bottom: 1px solid #363636;
+  z-index: 10;
+}
+
+.search-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: #a8a8a8;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 40px 12px 40px;
+  border: 1px solid #363636;
+  border-radius: 8px;
+  background: #121212;
+  font-size: 14px;
+  outline: none;
+  color: #ffffff;
+}
+
+.search-input:focus {
+  border-color: #a8a8a8;
+}
+
+.search-input::placeholder {
+  color: #a8a8a8;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #a8a8a8;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Search Content */
+.search-content {
+  margin-top: 20px;
+}
+
+/* Loading */
+.loading-container {
+  text-align: center;
+  padding: 40px 0;
+  color: #a8a8a8;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #363636;
+  border-top: 3px solid #0095f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: #a8a8a8;
+}
+
+.no-results p {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+/* Recent Searches */
+.recent-searches {
+  margin-top: 20px;
+}
+
+.recent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.recent-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  flex: 1;
+}
+
+.clear-all-btn {
+  background: none;
+  border: none;
+  color: #0095f6;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #262626;
+}
+
+.recent-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  cursor: pointer;
+  padding: 8px 0;
+  color: #ffffff;
+}
+
+.recent-content:hover {
+  background: #121212;
+}
+
+.recent-content svg {
+  margin-right: 12px;
+  color: #a8a8a8;
+}
+
+.remove-recent {
+  background: none;
+  border: none;
+  color: #a8a8a8;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Search Tabs */
+.search-tabs {
+  display: flex;
+  border-bottom: 1px solid #363636;
+  margin-bottom: 20px;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: #a8a8a8;
+  cursor: pointer;
+}
+
+.tab.active {
+  color: #0095f6;
+  border-bottom-color: #0095f6;
+}
+
+/* Results Sections */
+.results-section {
+  margin-bottom: 30px;
+}
+
+.results-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+/* User Result */
+.user-result {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #262626;
+}
+
+.user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+  border: 1px solid #363636;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.username {
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+
+.fullname {
+  color: #a8a8a8;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.bio {
+  color: #a8a8a8;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.user-actions {
+  margin-left: auto;
+}
+
+.btn-follow {
+  background: #0095f6;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-unfollow {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid #363636;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-unfollow:hover {
+  background: #363636;
+}
+
+/* Hashtag Result */
+.hashtag-result {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #262626;
+  color: #ffffff;
+}
+
+.hashtag-icon {
+  font-size: 24px;
+  margin-right: 12px;
+  color: #0095f6;
+}
+
+.hashtag-name {
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+
+.hashtag-count {
+  color: #a8a8a8;
+  font-size: 14px;
+}
+
+/* Posts Grid */
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.post-result {
+  position: relative;
+  aspect-ratio: 1;
+  cursor: pointer;
+}
+
+.post-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #121212;
+}
+
+.post-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: 4px;
+}
+
+.post-result:hover .post-overlay {
+  opacity: 1;
+}
+
+.post-stats {
+  color: white;
+  font-weight: 600;
+  display: flex;
+  gap: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .search-page {
+    padding: 0;
+  }
+  
+  .search-header {
+    padding: 16px;
+  }
+  
+  .search-content {
+    margin-top: 0;
+  }
+}
+
+/* Thêm hiệu ứng hover cho các interactive elements */
+.tab:hover {
+  color: #ffffff;
+}
+
+.recent-content:hover {
+  color: #ffffff;
+}
+
+.clear-btn:hover,
+.remove-recent:hover {
+  color: #ffffff;
+}
+
+.btn-follow:hover {
+  background: #0081d6;
+}
+
+/* Scrollbar tùy chỉnh cho dark mode */
+.search-page::-webkit-scrollbar {
+  width: 8px;
+}
+
+.search-page::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+.search-page::-webkit-scrollbar-thumb {
+  background: #363636;
+  border-radius: 4px;
+}
+
+.search-page::-webkit-scrollbar-thumb:hover {
+  background: #555555;
+}

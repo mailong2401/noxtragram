@@ -9,6 +9,7 @@ import CreatePost from './components/ui/CreatePost/CreatePost';
 import Login from './pages/Auth/Login/Login';
 import Register from './pages/Auth/Register/Register';
 import PostDetail from './pages/PostDetail/PostDetail';
+import Search from './pages/Search/Search'
 import './App.css';
 
 // Protected Route Component với Layout
@@ -48,9 +49,9 @@ function App() {
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/message" element={<ProtectedRoute><Message /></ProtectedRoute>} />
             <Route path="/create-post" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
+            <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
 
             {/* Thêm các route khác nếu cần */}
-            <Route path="/search" element={<ProtectedRoute><div>Search Page</div></ProtectedRoute>} />
             <Route path="/explore" element={<ProtectedRoute><div>Explore Page</div></ProtectedRoute>} />
             <Route path="/reels" element={<ProtectedRoute><div>Reels Page</div></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><div>Notifications Page</div></ProtectedRoute>} />

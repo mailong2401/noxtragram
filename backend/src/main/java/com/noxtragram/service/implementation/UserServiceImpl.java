@@ -45,6 +45,14 @@ public class UserServiceImpl implements UserService {
     this.jwtUtils = jwtUtils;
   }
 
+  // ✅ THÊM METHOD MỚI - Lấy userId từ username
+  @Override
+  public Long getUserIdByUsername(String username) {
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+    return user.getId();
+  }
+
   @Override
   public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) {
     User user = userRepository.findByEmail(loginRequestDTO.getEmail())

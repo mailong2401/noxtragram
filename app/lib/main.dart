@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:noxtragram/data/presentation/pages/home/home_page.dart';
 
 import 'data/presentation/pages/auth/login_page.dart';
 import 'data/presentation/pages/auth/register_page/register_page_email.dart';
@@ -14,10 +15,6 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: ChatListPage(),
-    );
+    return MaterialApp(home: LoginPage());
   }
 }
-
-

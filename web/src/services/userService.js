@@ -169,15 +169,16 @@ class UserService {
   // ============ SEARCH & DISCOVER ============
 
   async searchUsers(query, page = 0, size = 20) {
-    try {
-      const response = await apiClient.get('/users/search', {
-        params: { q: query, page, size }
-      });
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
+  try {
+    const response = await apiClient.get('/users/search', {
+      params: { keyword: query, page, size }  // ✅ dùng keyword đúng như backend
+    });
+    return response.data;
+  } catch (error) {
+    throw this.handleError(error);
   }
+}
+
 
   async getSuggestedUsers(page = 0, size = 10) {
     try {

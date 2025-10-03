@@ -29,6 +29,8 @@ public interface UserService {
 
   void deleteUser(Long userId);
 
+  Long getUserIdByUsername(String username);
+
   // Password Management
   void changePassword(Long userId, PasswordChangeRequestDTO passwordChangeDTO);
 

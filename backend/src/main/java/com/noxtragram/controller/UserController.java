@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -132,28 +133,78 @@ public class UserController {
 
   // 👥 FOLLOW SYSTEM
 
-  @PostMapping("/{followerId}/follow/{followingId}")
-  public ResponseEntity<Void> followUser(
-      @PathVariable Long followerId,
-      @PathVariable Long followingId) {
-    userService.followUser(followerId, followingId);
-    return ResponseEntity.ok().build();
+  @PostMapping("/follow/{targetUserId}")
+  public ResponseEntity<?> followUser(
+      @PathVariable Long targetUserId,
+      Authentication authentication) {
+    try {
+      if (authentication == null || !authentication.isAuthenticated()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      }
+
+      // Lấy userId từ authentication (người đang đăng nhập)
+      String username = authentication.getName();
+      Long currentUserId = userService.getUserIdByUsername(username);
+
+      userService.followUser(currentUserId, targetUserId);
+
+      return ResponseEntity.ok().body(Map.of(
+          "message", "Followed user successfully",
+          "following", true));
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("error", e.getMessage()));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to follow user"));
+    }
   }
 
-  @PostMapping("/{followerId}/unfollow/{followingId}")
-  public ResponseEntity<Void> unfollowUser(
-      @PathVariable Long followerId,
-      @PathVariable Long followingId) {
-    userService.unfollowUser(followerId, followingId);
-    return ResponseEntity.ok().build();
+  @PostMapping("/unfollow/{targetUserId}")
+  public ResponseEntity<?> unfollowUser(
+      @PathVariable Long targetUserId,
+      Authentication authentication) {
+    try {
+      if (authentication == null || !authentication.isAuthenticated()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      }
+
+      // Lấy userId từ authentication (người đang đăng nhập)
+      String username = authentication.getName();
+      Long currentUserId = userService.getUserIdByUsername(username);
+
+      userService.unfollowUser(currentUserId, targetUserId);
+
+      return ResponseEntity.ok().body(Map.of(
+          "message", "Unfollowed user successfully",
+          "following", false));
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("error", e.getMessage()));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to unfollow user"));
+    }
   }
 
-  @GetMapping("/{userId}/is-following/{targetUserId}")
-  public ResponseEntity<Boolean> isFollowing(
-      @PathVariable Long userId,
-      @PathVariable Long targetUserId) {
-    boolean isFollowing = userService.isFollowing(userId, targetUserId);
-    return ResponseEntity.ok(isFollowing);
+  @GetMapping("/is-following/{targetUserId}")
+  public ResponseEntity<?> isFollowing(
+      @PathVariable Long targetUserId,
+      Authentication authentication) {
+    try {
+      if (authentication == null || !authentication.isAuthenticated()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      }
+
+      String username = authentication.getName();
+      Long currentUserId = userService.getUserIdByUsername(username);
+
+      boolean isFollowing = userService.isFollowing(currentUserId, targetUserId);
+      return ResponseEntity.ok(Map.of("isFollowing", isFollowing));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to check follow status"));
+    }
   }
 
   @GetMapping("/{userId}/followers")
