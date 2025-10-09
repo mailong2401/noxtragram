@@ -39,7 +39,34 @@ const SearchPage = () => {
     localStorage.setItem('recentSearches', JSON.stringify(updated));
   };
 
-  // Search function với debounce
+  // Check follow status cho một user
+  const checkUserFollowStatus = async (userId) => {
+    try {
+      const response = await userService.checkFollowStatus(userId);
+      return response.isFollowing || false;
+    } catch (error) {
+      console.error(`Error checking follow status for user ${userId}:`, error);
+      return false;
+    }
+  };
+
+  // Check follow status cho tất cả users trong kết quả tìm kiếm
+  const checkAllUsersFollowStatus = async (users) => {
+    try {
+      const usersWithFollowStatus = await Promise.all(
+        users.map(async (user) => {
+          const isFollowing = await checkUserFollowStatus(user.id);
+          return { ...user, isFollowing };
+        })
+      );
+      return usersWithFollowStatus;
+    } catch (error) {
+      console.error('Error checking follow statuses:', error);
+      return users.map(user => ({ ...user, isFollowing: false }));
+    }
+  };
+
+  // Search function với debounce - ĐÃ CẬP NHẬT
   const performSearch = useCallback(async (query) => {
     if (!query.trim()) {
       setSearchResults({ users: [], posts: [], hashtags: [] });
@@ -51,6 +78,10 @@ const SearchPage = () => {
     try {
       // Search users
       const usersResponse = await userService.searchUsers(query);
+      let users = usersResponse.content || usersResponse || [];
+      
+      // Check follow status cho tất cả users tìm được
+      users = await checkAllUsersFollowStatus(users);
       
       // Search posts by hashtag
       const postsResponse = await postService.getPostsByHashtag(query);
@@ -59,14 +90,14 @@ const SearchPage = () => {
       const hashtags = extractHashtagsFromPosts(postsResponse.content || []);
 
       setSearchResults({
-        users: usersResponse.content || usersResponse || [],
+        users: users,
         posts: postsResponse.content || postsResponse || [],
         hashtags: hashtags.slice(0, 5)
       });
 
       // Lưu vào recent searches
       saveToRecentSearches(query, 'all', {
-        userCount: usersResponse.content?.length || 0,
+        userCount: users.length,
         postCount: postsResponse.content?.length || 0
       });
 
@@ -124,11 +155,11 @@ const SearchPage = () => {
     localStorage.removeItem('recentSearches');
   };
 
-  // Follow user
+  // Follow user - ĐÃ CẬP NHẬT
   const handleFollow = async (userId) => {
     try {
       await userService.followUser(userId);
-      // Update UI
+      // Update UI - cập nhật isFollowing thành true
       setSearchResults(prev => ({
         ...prev,
         users: prev.users.map(user => 
@@ -140,11 +171,11 @@ const SearchPage = () => {
     }
   };
 
-  // Unfollow user
+  // Unfollow user - ĐÃ CẬP NHẬT
   const handleUnfollow = async (userId) => {
     try {
       await userService.unfollowUser(userId);
-      // Update UI
+      // Update UI - cập nhật isFollowing thành false
       setSearchResults(prev => ({
         ...prev,
         users: prev.users.map(user => 
@@ -320,7 +351,7 @@ const SearchPage = () => {
   );
 };
 
-// User Result Component
+// User Result Component - GIỮ NGUYÊN
 const UserResult = ({ user, onFollow, onUnfollow }) => (
   <div className="user-result">
     <img 
@@ -353,7 +384,7 @@ const UserResult = ({ user, onFollow, onUnfollow }) => (
   </div>
 );
 
-// Hashtag Result Component
+// Hashtag Result Component - GIỮ NGUYÊN
 const HashtagResult = ({ tag, count }) => (
   <div className="hashtag-result">
     <div className="hashtag-icon">#</div>
@@ -364,7 +395,7 @@ const HashtagResult = ({ tag, count }) => (
   </div>
 );
 
-// Post Result Component
+// Post Result Component - GIỮ NGUYÊN
 const PostResult = ({ post }) => (
   <div className="post-result">
     <img 

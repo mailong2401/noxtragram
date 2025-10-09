@@ -31,19 +31,27 @@ public class WebSecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
+        // ✅ Bật CORS với cấu hình custom
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        // ⚠️ Tắt CSRF cho REST API (vì frontend gọi qua token, không dùng form)
         .csrf(csrf -> csrf.disable())
+        // Không tạo session
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        // Cấu hình quyền truy cập
         .authorizeHttpRequests(authz -> authz
-            // Public endpoints
+            // ✅ Public endpoints
             .requestMatchers(
                 "/uploads/**",
                 "/users/login",
                 "/users/register",
                 "/users/check-email",
                 "/users/check-username",
-                "/api/uploads/**")
-            .permitAll()
+                "/api/uploads/**",
+                "/ws/**" // Thêm WebSocket nếu bạn có
+            ).permitAll()
+
+            // ✅ Cho phép test API post (tạm mở)
+            .requestMatchers("/api/posts/**").permitAll()
 
             // Protected endpoints
             .requestMatchers(
@@ -51,7 +59,6 @@ public class WebSecurityConfig {
                 "/users/me",
                 "/users/me/profile-picture",
                 "/users/*/follow/*",
-                "/posts/**",
                 "/comments/**")
             .authenticated()
 
@@ -63,6 +70,7 @@ public class WebSecurityConfig {
             .hasRole("ADMIN")
 
             .anyRequest().authenticated())
+        // Thêm JWT filter trước UsernamePasswordAuthenticationFilter
         .addFilterBefore(jwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
@@ -78,17 +86,12 @@ public class WebSecurityConfig {
     return authConfig.getAuthenticationManager();
   }
 
+  // ✅ Cấu hình CORS cho phép React truy cập
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOriginPatterns(Arrays.asList(
-        "http://localhost:3000",
-        "http://localhost:5000",
-        "http://localhost:8081",
-        "http://10.0.2.2:8080",
-        "http://127.0.0.1:8080",
-        "http://localhost:8080",
-        "https://yourdomain.com"));
+    configuration.setAllowedOrigins(Arrays.asList(
+        "http://localhost:3000"));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
     configuration.setAllowedHeaders(Arrays.asList("*"));
     configuration.setAllowCredentials(true);

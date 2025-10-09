@@ -10,6 +10,7 @@ import Login from './pages/Auth/Login/Login';
 import Register from './pages/Auth/Register/Register';
 import PostDetail from './pages/PostDetail/PostDetail';
 import Search from './pages/Search/Search'
+import Settings from './pages/Settings/Settings'
 import './App.css';
 
 // Protected Route Component với Layout
@@ -50,6 +51,7 @@ function App() {
             <Route path="/message" element={<ProtectedRoute><Message /></ProtectedRoute>} />
             <Route path="/create-post" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
             <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
             {/* Thêm các route khác nếu cần */}
             <Route path="/explore" element={<ProtectedRoute><div>Explore Page</div></ProtectedRoute>} />

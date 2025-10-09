@@ -207,16 +207,46 @@ public class UserController {
     }
   }
 
-  @GetMapping("/{userId}/followers")
-  public ResponseEntity<List<UserResponseDTO>> getFollowers(@PathVariable Long userId) {
-    List<UserResponseDTO> followers = userService.getFollowers(userId);
-    return ResponseEntity.ok(followers);
+  // Danh sách người theo dõi user hiện tại
+  @GetMapping("/followers")
+  public ResponseEntity<?> getCurrentUserFollowers(Authentication authentication) {
+    try {
+      if (authentication == null || !authentication.isAuthenticated()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(Map.of("error", "User not authenticated"));
+      }
+
+      String username = authentication.getName();
+      Long userId = userService.getUserIdByUsername(username);
+
+      List<UserResponseDTO> followers = userService.getFollowers(userId);
+      return ResponseEntity.ok(followers);
+
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to get followers"));
+    }
   }
 
-  @GetMapping("/{userId}/following")
-  public ResponseEntity<List<UserResponseDTO>> getFollowing(@PathVariable Long userId) {
-    List<UserResponseDTO> following = userService.getFollowing(userId);
-    return ResponseEntity.ok(following);
+  // Danh sách user mà user hiện tại đang theo dõi
+  @GetMapping("/following")
+  public ResponseEntity<?> getCurrentUserFollowing(Authentication authentication) {
+    try {
+      if (authentication == null || !authentication.isAuthenticated()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(Map.of("error", "User not authenticated"));
+      }
+
+      String username = authentication.getName();
+      Long userId = userService.getUserIdByUsername(username);
+
+      List<UserResponseDTO> following = userService.getFollowing(userId);
+      return ResponseEntity.ok(following);
+
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Failed to get following"));
+    }
   }
 
   @GetMapping("/{userId}/follower-count")

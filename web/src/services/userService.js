@@ -18,6 +18,36 @@ class UserService {
     }
   }
 
+    // Trong userService.js - thêm method mới
+  async searchUsersWithFollowStatus(query, page = 0, size = 20) {
+    try {
+      const response = await apiClient.get('/users/search', {
+        params: { keyword: query, page, size }
+      });
+      
+      const users = response.data.content || response.data || [];
+      
+      // Check follow status cho từng user
+      const usersWithFollowStatus = await Promise.all(
+        users.map(async (user) => {
+          try {
+            const followStatus = await this.checkFollowStatus(user.id);
+            return { ...user, isFollowing: followStatus.isFollowing };
+          } catch (error) {
+            return { ...user, isFollowing: false };
+          }
+        })
+      );
+      
+      return {
+        ...response.data,
+        content: usersWithFollowStatus
+      };
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   async getUserById(id) {
     try {
       const response = await apiClient.get(`/users/${id}`);
@@ -135,31 +165,32 @@ class UserService {
     }
   }
 
-  async getFollowers(userId, page = 0, size = 20) {
-    try {
-      const response = await apiClient.get(`/users/${userId}/followers`, {
-        params: { page, size }
-      });
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
+async getFollowers(page = 0, size = 20) {
+  try {
+    const response = await apiClient.get(`/users/followers`, {
+      params: { page, size },
+    });
+    return response.data;
+  } catch (error) {
+    throw this.handleError(error);
   }
+}
 
-  async getFollowing(userId, page = 0, size = 20) {
-    try {
-      const response = await apiClient.get(`/users/${userId}/following`, {
-        params: { page, size }
-      });
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
+async getFollowing(page = 0, size = 20) {
+  try {
+    const response = await apiClient.get(`/users/following`, {
+      params: { page, size },
+    });
+    return response.data;
+  } catch (error) {
+    throw this.handleError(error);
   }
+}
+
 
   async checkFollowStatus(userId) {
     try {
-      const response = await apiClient.get(`/users/${userId}/follow-status`);
+      const response = await apiClient.get(`/users/is-following/${userId}`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);

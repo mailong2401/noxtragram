@@ -30,7 +30,7 @@ const Sidebar = () => {
     { name: 'Create', path: '/create-post', icon: createIcon },
     { name: 'Dashboard', path: '/dashboard', icon: dashboardIcon },
     { name: 'Profile', path: '/profile', icon: profileIcon },
-    { name: 'Setting', path: '/setting', icon: settingIcon },
+    { name: 'Setting', path: '/settings', icon: settingIcon },
   ];
 
   const isActive = (path) => location.pathname === path;

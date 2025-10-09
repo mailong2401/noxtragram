@@ -36,12 +36,9 @@ public class Message {
   @Column(name = "message_type")
   private MessageType messageType = MessageType.TEXT;
 
-  // ⏰ Timestamps
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
-
-  // 🔗 Relationships
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "sender_id", nullable = false)
@@ -55,7 +52,6 @@ public class Message {
   @JoinColumn(name = "chat_room_id")
   private ChatRoom chatRoom;
 
-  // 🏗️ Constructors
   public Message() {
   }
 
@@ -65,18 +61,27 @@ public class Message {
     this.receiver = receiver;
   }
 
-  // 📊 Business Methods
+  // Thêm constructor cho các loại tin nhắn khác
+  public Message(String content, User sender, User receiver, MessageType messageType) {
+    this.content = content;
+    this.sender = sender;
+    this.receiver = receiver;
+    this.messageType = messageType;
+  }
 
-  /**
-   * Đánh dấu tin nhắn đã đọc
-   */
+  public Message(String content, String imageUrl, User sender, User receiver, MessageType messageType) {
+    this.content = content;
+    this.imageUrl = imageUrl;
+    this.sender = sender;
+    this.receiver = receiver;
+    this.messageType = messageType;
+  }
+
+  // Business Methods
   public void markAsRead() {
     this.isRead = true;
   }
 
-  /**
-   * Kiểm tra tin nhắn có thể xem được không
-   */
   public boolean isVisibleForUser(User user) {
     if (user.equals(sender)) {
       return !isDeletedForSender;
@@ -86,7 +91,51 @@ public class Message {
     return false;
   }
 
-  // 🔄 Getters and Setters
+  // Helper methods for message type
+  public boolean isMediaMessage() {
+    return this.messageType.isMedia();
+  }
+
+  public boolean isFileMessage() {
+    return this.messageType.isFile();
+  }
+
+  public boolean isSystemMessage() {
+    return this.messageType.isSystem();
+  }
+
+  public String getMessageIcon() {
+    return this.messageType.getIcon();
+  }
+
+  public boolean isDeletable() {
+    return !this.messageType.isSystem();
+  }
+
+  public String getPreview() {
+    switch (this.messageType) {
+      case TEXT:
+        return this.content;
+      case IMAGE:
+        return "🖼️ Hình ảnh";
+      case VIDEO:
+        return "🎥 Video";
+      case VOICE:
+        return "🎤 Tin nhắn thoại";
+      case FILE:
+        return "📎 Tệp đính kèm";
+      case LOCATION:
+        return "📍 Vị trí";
+      case STICKER:
+        return "😊 Nhãn dán";
+      case SYSTEM:
+        return "⚙️ " + this.content;
+      default:
+        return this.content;
+    }
+  }
+
+  // Getters and Setters
   public Long getId() {
     return id;
   }
@@ -174,11 +223,5 @@ public class Message {
   public void setChatRoom(ChatRoom chatRoom) {
     this.chatRoom = chatRoom;
   }
-}
 
-enum MessageType {
-  TEXT,
-  IMAGE,
-  VIDEO,
-  VOICE
 }
