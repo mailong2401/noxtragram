@@ -18,25 +18,31 @@ const Profile = () => {
 
     // Hàm thêm token vào URL
     const getImageUrlWithToken = (imageUrl) => {
-        if (!imageUrl) return null;
-        
-        // Nếu đã là URL external thì giữ nguyên
-        if (imageUrl.includes('pravatar.cc') || imageUrl.includes('picsum.photos') || imageUrl.startsWith('http')) {
-            return imageUrl;
-        }
-        
-        // Thêm base URL nếu là đường dẫn tương đối
-        let fullUrl = imageUrl;
-        if (!imageUrl.startsWith('http')) {
-            fullUrl = `http://localhost:8080${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
-        }
-        
-        // Thêm token vào query parameter
-        const token = localStorage.getItem('token');
-        const separator = fullUrl.includes('?') ? '&' : '?';
-        
-        return token ? `${fullUrl}${separator}token=${token}` : fullUrl;
-    };
+    if (!imageUrl) return null;
+    
+    // Nếu URL đã có token rồi thì return luôn
+    if (imageUrl.includes('token=')) return imageUrl;
+    
+    // Các domain không cần token
+    const externalDomains = ['pravatar.cc', 'picsum.photos'];
+    const isExternal = externalDomains.some(domain => imageUrl.includes(domain));
+    
+    if (isExternal || imageUrl.startsWith('http')) {
+        return imageUrl;
+    }
+    
+    // Thêm base URL cho local image
+    let fullUrl = imageUrl;
+    if (!imageUrl.startsWith('http')) {
+        fullUrl = `http://localhost:8080${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+    }
+    
+    // Thêm token
+    const token = localStorage.getItem('token');
+    const separator = fullUrl.includes('?') ? '&' : '?';
+    
+    return token ? `${fullUrl}${separator}token=${token}` : fullUrl;
+};
 
     // Fetch profile data
     useEffect(() => {
@@ -71,21 +77,25 @@ const Profile = () => {
     };
 
     const fetchUserStats = async () => {
-        try {
-            if (!user?.id) return;
+  try {
+    if (!user?.id) return;
 
-            const [followersList, followingList] = await Promise.all([
-                userService.getFollowers(user.id),
-                userService.getFollowing(user.id)
-            ]);
+    const [followersRes, followingRes] = await Promise.all([
+      userService.getFollowers(user.id),
+      userService.getFollowing(user.id)
+    ]);
 
-            setFollowers(followersList);
-            setFollowing(followingList);
+    // Chuẩn hóa content
+    const followersList = followersRes.content || followersRes.data?.content || [];
+    const followingList = followingRes.content || followingRes.data?.content || [];
 
-        } catch (error) {
-            console.error('Error fetching user stats:', error);
-        }
-    };
+    setFollowers(followersList);
+    setFollowing(followingList);
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+  }
+};
+
 
     const fetchPosts = async () => {
         try {
@@ -102,7 +112,7 @@ const Profile = () => {
 
     const handleFollow = async (targetUserId) => {
         try {
-            await userService.followUser(user.id, targetUserId);
+            await userService.followUser( targetUserId);
             // Refresh stats after follow
             fetchUserStats();
         } catch (error) {
@@ -126,7 +136,7 @@ const Profile = () => {
 
     const handleUploadProfilePicture = async (file) => {
         try {
-            const updatedUser = await userService.uploadProfilePicture(user.id, file);
+            const updatedUser = await userService.uploadProfilePicture(file);
             setProfileData(updatedUser);
             updateUser(updatedUser);
         } catch (error) {

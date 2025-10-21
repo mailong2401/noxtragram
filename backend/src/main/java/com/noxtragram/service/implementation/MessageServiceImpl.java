@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor // ✅ THÊM DÒNG NÀY
+@RequiredArgsConstructor
 @Slf4j
 public class MessageServiceImpl implements MessageService {
 
@@ -36,10 +36,12 @@ public class MessageServiceImpl implements MessageService {
     User sender = getUserById(senderId);
     User receiver = getUserById(receiverId);
 
-    Message message = createTextMessage(content, sender, receiver);
-    Message savedMessage = messageRepository.save(message);
+    Message message = new Message(content, sender, receiver);
+    message.setMessageType(MessageType.TEXT);
 
+    Message savedMessage = messageRepository.save(message);
     sendWebSocketNotification(savedMessage, receiverId);
+
     log.info("Text message sent from {} to {}", senderId, receiverId);
     return savedMessage;
   }
@@ -51,10 +53,13 @@ public class MessageServiceImpl implements MessageService {
     User receiver = getUserById(receiverId);
 
     String content = caption != null ? caption : "🖼️ Đã gửi một hình ảnh";
-    Message message = createMediaMessage(content, imageUrl, sender, receiver, MessageType.IMAGE);
-    Message savedMessage = messageRepository.save(message);
+    Message message = new Message(content, sender, receiver);
+    message.setMessageType(MessageType.IMAGE);
+    message.setImageUrl(imageUrl);
 
+    Message savedMessage = messageRepository.save(message);
     sendWebSocketNotification(savedMessage, receiverId);
+
     log.info("Image message sent from {} to {}", senderId, receiverId);
     return savedMessage;
   }
@@ -66,10 +71,13 @@ public class MessageServiceImpl implements MessageService {
     User receiver = getUserById(receiverId);
 
     String content = caption != null ? caption : "🎥 Đã gửi một video";
-    Message message = createMediaMessage(content, videoUrl, sender, receiver, MessageType.VIDEO);
-    Message savedMessage = messageRepository.save(message);
+    Message message = new Message(content, sender, receiver);
+    message.setMessageType(MessageType.VIDEO);
+    message.setImageUrl(videoUrl);
 
+    Message savedMessage = messageRepository.save(message);
     sendWebSocketNotification(savedMessage, receiverId);
+
     log.info("Video message sent from {} to {}", senderId, receiverId);
     return savedMessage;
   }
@@ -82,10 +90,13 @@ public class MessageServiceImpl implements MessageService {
 
     String content = duration != null ? String.format("🎤 Tin nhắn thoại (%d giây)", duration) : "🎤 Tin nhắn thoại";
 
-    Message message = createMediaMessage(content, audioUrl, sender, receiver, MessageType.VOICE);
-    Message savedMessage = messageRepository.save(message);
+    Message message = new Message(content, sender, receiver);
+    message.setMessageType(MessageType.VOICE);
+    message.setImageUrl(audioUrl);
 
+    Message savedMessage = messageRepository.save(message);
     sendWebSocketNotification(savedMessage, receiverId);
+
     log.info("Voice message sent from {} to {} (duration: {}s)", senderId, receiverId, duration);
     return savedMessage;
   }
@@ -99,10 +110,13 @@ public class MessageServiceImpl implements MessageService {
     String content = String.format("📎 %s (%.2f MB)",
         fileName, fileSize != null ? fileSize / (1024.0 * 1024.0) : 0);
 
-    Message message = createFileMessage(content, fileUrl, fileName, fileSize, sender, receiver);
-    Message savedMessage = messageRepository.save(message);
+    Message message = new Message(content, sender, receiver);
+    message.setMessageType(MessageType.FILE);
+    message.setImageUrl(fileUrl);
 
+    Message savedMessage = messageRepository.save(message);
     sendWebSocketNotification(savedMessage, receiverId);
+
     log.info("File message sent from {} to {}: {}", senderId, receiverId, fileName);
     return savedMessage;
   }
@@ -115,10 +129,13 @@ public class MessageServiceImpl implements MessageService {
     User receiver = getUserById(receiverId);
 
     String locationData = String.format("%f,%f,%s", latitude, longitude, address != null ? address : "");
-    Message message = createLocationMessage("📍 Đã chia sẻ vị trí", locationData, sender, receiver);
-    Message savedMessage = messageRepository.save(message);
+    Message message = new Message("📍 Đã chia sẻ vị trí", sender, receiver);
+    message.setMessageType(MessageType.LOCATION);
+    message.setContent(locationData); // Lưu dữ liệu vị trí vào content
 
+    Message savedMessage = messageRepository.save(message);
     sendWebSocketNotification(savedMessage, receiverId);
+
     log.info("Location message sent from {} to {}: {},{}", senderId, receiverId, latitude, longitude);
     return savedMessage;
   }
@@ -129,10 +146,13 @@ public class MessageServiceImpl implements MessageService {
     User sender = getUserById(senderId);
     User receiver = getUserById(receiverId);
 
-    Message message = createStickerMessage("😊 Đã gửi nhãn dán", stickerId, sender, receiver);
-    Message savedMessage = messageRepository.save(message);
+    Message message = new Message("😊 Đã gửi nhãn dán", sender, receiver);
+    message.setMessageType(MessageType.STICKER);
+    message.setContent(stickerId); // Lưu sticker ID vào content
 
+    Message savedMessage = messageRepository.save(message);
     sendWebSocketNotification(savedMessage, receiverId);
+
     log.info("Sticker message sent from {} to {}: {}", senderId, receiverId, stickerId);
     return savedMessage;
   }
@@ -143,10 +163,12 @@ public class MessageServiceImpl implements MessageService {
     User sender = getUserById(senderId);
     User receiver = getUserById(receiverId);
 
-    Message message = createSystemMessage(content, sender, receiver);
-    Message savedMessage = messageRepository.save(message);
+    Message message = new Message(content, sender, receiver);
+    message.setMessageType(MessageType.SYSTEM);
 
+    Message savedMessage = messageRepository.save(message);
     // Không gửi WebSocket notification cho system message
+
     log.info("System message sent from {} to {}: {}", senderId, receiverId, content);
     return savedMessage;
   }
@@ -157,14 +179,11 @@ public class MessageServiceImpl implements MessageService {
     User sender = getUserById(senderId);
     User receiver = getUserById(receiverId);
 
-    Message message = new Message();
-    message.setContent(content);
-    message.setSender(sender);
-    message.setReceiver(receiver);
+    Message message = new Message(content, sender, receiver);
     message.setMessageType(messageType);
 
     if (mediaUrl != null) {
-      message.setImageUrl(mediaUrl); // Sử dụng imageUrl cho media nói chung
+      message.setImageUrl(mediaUrl);
     }
 
     Message savedMessage = messageRepository.save(message);
@@ -219,13 +238,6 @@ public class MessageServiceImpl implements MessageService {
   public List<Message> getUnreadMessages(Long userId) {
     User user = getUserById(userId);
     return messageRepository.findUnreadMessages(user);
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public List<Message> getMessagesByChatRoom(Long chatRoomId, Long currentUserId) {
-    User currentUser = getUserById(currentUserId);
-    return messageRepository.findByChatRoomId(chatRoomId, currentUser);
   }
 
   // ============ MESSAGE STATUS METHODS ============
@@ -320,7 +332,6 @@ public class MessageServiceImpl implements MessageService {
 
     Message firstForwardedMessage = null;
 
-    // Tạo tin nhắn mới cho từng receiver
     for (Long receiverId : receiverIds) {
       User receiver = getUserById(receiverId);
       Message forwardedMessage = createForwardedMessage(originalMessage, sender, receiver);
@@ -386,50 +397,6 @@ public class MessageServiceImpl implements MessageService {
         .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
   }
 
-  // Factory methods thay thế cho các method trong Entity
-  private Message createTextMessage(String content, User sender, User receiver) {
-    Message message = new Message(content, sender, receiver);
-    message.setMessageType(MessageType.TEXT);
-    return message;
-  }
-
-  private Message createMediaMessage(String content, String mediaUrl, User sender, User receiver,
-      MessageType messageType) {
-    Message message = new Message(content, sender, receiver);
-    message.setMessageType(messageType);
-    message.setImageUrl(mediaUrl);
-    return message;
-  }
-
-  private Message createFileMessage(String content, String fileUrl, String fileName, Long fileSize, User sender,
-      User receiver) {
-    Message message = new Message(content, sender, receiver);
-    message.setMessageType(MessageType.FILE);
-    message.setImageUrl(fileUrl);
-    // Có thể thêm các field fileName, fileSize nếu Entity có
-    return message;
-  }
-
-  private Message createLocationMessage(String content, String locationData, User sender, User receiver) {
-    Message message = new Message(content, sender, receiver);
-    message.setMessageType(MessageType.LOCATION);
-    // Có thể set location data nếu Entity có field
-    return message;
-  }
-
-  private Message createStickerMessage(String content, String stickerId, User sender, User receiver) {
-    Message message = new Message(content, sender, receiver);
-    message.setMessageType(MessageType.STICKER);
-    // Có thể set stickerId nếu Entity có field
-    return message;
-  }
-
-  private Message createSystemMessage(String content, User sender, User receiver) {
-    Message message = new Message(content, sender, receiver);
-    message.setMessageType(MessageType.SYSTEM);
-    return message;
-  }
-
   private Message createForwardedMessage(Message original, User newSender, User newReceiver) {
     Message forwarded = new Message();
     forwarded.setContent("[Chuyển tiếp] " + original.getContent());
@@ -455,10 +422,14 @@ public class MessageServiceImpl implements MessageService {
    */
   private void sendWebSocketNotification(Message message, Long receiverId) {
     try {
+      Map<String, Object> messageDTO = createMessageDTO(message);
+
+      // Gửi đến receiver
       messagingTemplate.convertAndSendToUser(
           receiverId.toString(),
           "/queue/messages",
-          createMessageDTO(message));
+          messageDTO);
+
       log.debug("WebSocket notification sent to user {}", receiverId);
     } catch (Exception e) {
       log.error("Failed to send WebSocket notification: {}", e.getMessage());
@@ -493,7 +464,7 @@ public class MessageServiceImpl implements MessageService {
     dto.put("id", message.getId());
     dto.put("content", message.getContent());
     dto.put("imageUrl", message.getImageUrl());
-    dto.put("messageType", message.getMessageType());
+    dto.put("messageType", message.getMessageType().name());
     dto.put("senderId", message.getSender().getId());
     dto.put("senderName", message.getSender().getUsername());
     dto.put("senderAvatar", message.getSender().getProfilePicture());

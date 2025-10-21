@@ -176,14 +176,51 @@ async getFollowers(page = 0, size = 20) {
   }
 }
 
+// Trong userService.js
 async getFollowing(page = 0, size = 20) {
   try {
     const response = await apiClient.get(`/users/following`, {
       params: { page, size },
     });
-    return response.data;
+    
+    // Xử lý response để đảm bảo có cấu trúc thống nhất
+    if (response.data && Array.isArray(response.data)) {
+      // Nếu response là array trực tiếp
+      return {
+        success: true,
+        data: {
+          content: response.data,
+          totalElements: response.data.length,
+          totalPages: 1,
+          size: size,
+          number: page
+        }
+      };
+    } else if (response.data && response.data.content) {
+      // Nếu response có cấu trúc Page
+      return {
+        success: true,
+        data: response.data
+      };
+    } else {
+      // Fallback
+      return {
+        success: true,
+        data: {
+          content: [],
+          totalElements: 0,
+          totalPages: 0,
+          size: size,
+          number: page
+        }
+      };
+    }
   } catch (error) {
-    throw this.handleError(error);
+    console.error('Error in getFollowing:', error);
+    return {
+      success: false,
+      error: this.handleError(error)
+    };
   }
 }
 
@@ -281,6 +318,75 @@ async getFollowing(page = 0, size = 20) {
       return new Error('Network error: Unable to connect to server. Please check your connection.');
     } else {
       return new Error(`Unexpected error: ${error.message}`);
+    }
+  }
+
+
+  
+  // 🆕 LẤY DANH SÁCH NGƯỜI CÓ THỂ NHẮN TIN (Following + Mutual)
+  // 🆕 LẤY DANH SÁCH NGƯỜI CÓ THỂ NHẮN TIN (Following + Mutual)
+async getMessageableUsers(page = 0, size = 50) {
+  try {
+    // Lấy danh sách following
+    const followingResponse = await this.getFollowing(page, size);
+    
+    if (followingResponse.success) {
+      const content = followingResponse.data?.content || followingResponse.data || [];
+      
+      if (content.length > 0) {
+        return followingResponse;
+      }
+    }
+
+    // Fallback: lấy suggested users nếu không có following
+    const suggestedResponse = await this.getSuggestedUsers(page, size);
+    return suggestedResponse;
+
+  } catch (error) {
+    console.error('Error getting messageable users:', error);
+    // Return empty response để không break UI
+    return {
+      success: true,
+      data: {
+        content: [],
+        totalElements: 0,
+        totalPages: 0
+      }
+    };
+  }
+}
+
+
+    // 🆕 TÌM KIẾM NGƯỜI DÙNG ĐỂ NHẮN TIN
+  async searchMessageableUsers(query, page = 0, size = 20) {
+    try {
+      const response = await this.searchUsersWithFollowStatus(query, page, size);
+      
+      // Lọc những người đang follow hoặc có thể nhắn tin
+      const messageableUsers = response.content.filter(user => 
+        user.isFollowing || user.isMutual // Thêm logic mutual nếu có
+      );
+      
+      return {
+        ...response,
+        content: messageableUsers
+      };
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  
+  // 🆕 KIỂM TRA CÓ THỂ NHẮN TIN VỚI USER
+  async canMessageUser(targetUserId) {
+    try {
+      // Kiểm tra follow status
+      const followStatus = await this.checkFollowStatus(targetUserId);
+      
+      // Có thể nhắn tin nếu: đang follow nhau hoặc public profile
+      return followStatus.isFollowing || followStatus.isMutual;
+    } catch (error) {
+      return false;
     }
   }
 }

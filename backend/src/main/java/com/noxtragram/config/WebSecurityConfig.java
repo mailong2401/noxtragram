@@ -43,10 +43,12 @@ public class WebSecurityConfig {
             .requestMatchers(
                 "/uploads/**",
                 "/users/login",
+                "/messages",
                 "/users/register",
                 "/users/check-email",
                 "/users/check-username",
                 "/api/uploads/**",
+                "/messages/**",
                 "/ws/**" // Thêm WebSocket nếu bạn có
             ).permitAll()
 

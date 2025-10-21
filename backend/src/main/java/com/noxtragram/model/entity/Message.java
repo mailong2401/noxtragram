@@ -15,8 +15,6 @@ public class Message {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @NotBlank(message = "Message content is required")
-  @Size(max = 2000, message = "Message must not exceed 2000 characters")
   @Column(nullable = false, length = 2000)
   private String content;
 
@@ -47,10 +45,6 @@ public class Message {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "receiver_id", nullable = false)
   private User receiver;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "chat_room_id")
-  private ChatRoom chatRoom;
 
   public Message() {
   }
@@ -214,14 +208,6 @@ public class Message {
 
   public void setReceiver(User receiver) {
     this.receiver = receiver;
-  }
-
-  public ChatRoom getChatRoom() {
-    return chatRoom;
-  }
-
-  public void setChatRoom(ChatRoom chatRoom) {
-    this.chatRoom = chatRoom;
   }
 
 }

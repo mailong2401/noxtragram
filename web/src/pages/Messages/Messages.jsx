@@ -1,457 +1,368 @@
-// components/Messages/Messages.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useMessages } from '../../hooks/useMessages';
+import chatService from '../../services/chatService';
 import userService from '../../services/userService';
+import messageService from '../../services/messageService';
 import styles from './Messages.module.css';
 
 const Messages = () => {
-    const { user, isAuthenticated } = useAuth();
-    const [conversations, setConversations] = useState([]);
-    const [activeConversation, setActiveConversation] = useState(null);
-    const [messages, setMessages] = useState([]);
-    const [newMessage, setNewMessage] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSending, setIsSending] = useState(false);
-    const messagesEndRef = useRef(null);
-    const navigate = useNavigate();
-    const { conversationId } = useParams();
+  const { user, isAuthenticated } = useAuth();
+  const { conversationId } = useParams();
+  const [conversations, setConversations] = useState([]);
+  const [messageableUsers, setMessageableUsers] = useState([]);
+  const [activeConversation, setActiveConversation] = useState(null);
+  const [newMessage, setNewMessage] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const messagesEndRef = useRef(null);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        if (!isAuthenticated) return;
+  // ------------------ HOOK useMessages ------------------
+  const {
+    messages,
+    isLoading,
+    error,
+    hasMore,
+    sendTextMessage,
+    loadMore,
+    markAsRead
+  } = useMessages(activeConversation?.id);
 
-        const mockConversations = [
-            {
-                id: 1,
-                user: {
-                    id: 2,
-                    username: 'jane_smith',
-                    fullName: 'Jane Smith',
-                    profilePicture: 'https://i.pravatar.cc/150?img=2',
-                    isOnline: true,
-                    lastSeen: new Date()
-                },
-                lastMessage: {
-                    text: 'Hey, how are you doing?',
-                    timestamp: new Date(Date.now() - 300000),
-                    isRead: true,
-                    isSender: false
-                },
-                unreadCount: 0
-            },
-            {
-                id: 2,
-                user: {
-                    id: 3,
-                    username: 'mike_wilson',
-                    fullName: 'Mike Wilson',
-                    profilePicture: 'https://i.pravatar.cc/150?img=3',
-                    isOnline: false,
-                    lastSeen: new Date(Date.now() - 3600000)
-                },
-                lastMessage: {
-                    text: 'Check out this photo! 📸',
-                    timestamp: new Date(Date.now() - 1800000),
-                    isRead: false,
-                    isSender: false
-                },
-                unreadCount: 2
-            },
-            {
-                id: 3,
-                user: {
-                    id: 4,
-                    username: 'sarah_j',
-                    fullName: 'Sarah Johnson',
-                    profilePicture: 'https://i.pravatar.cc/150?img=4',
-                    isOnline: true,
-                    lastSeen: new Date()
-                },
-                lastMessage: {
-                    text: 'See you tomorrow!',
-                    timestamp: new Date(Date.now() - 86400000),
-                    isRead: true,
-                    isSender: true
-                },
-                unreadCount: 0
-            },
-            {
-                id: 4,
-                user: {
-                    id: 5,
-                    username: 'alex_turner',
-                    fullName: 'Alex Turner',
-                    profilePicture: 'https://i.pravatar.cc/150?img=5',
-                    isOnline: true,
-                    lastSeen: new Date()
-                },
-                lastMessage: {
-                    text: 'Are we still meeting today?',
-                    timestamp: new Date(Date.now() - 7200000),
-                    isRead: false,
-                    isSender: false
-                },
-                unreadCount: 1
-            }
-        ];
+  // Scroll xuống dưới mỗi khi có message mới
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
 
-        setConversations(mockConversations);
-        setIsLoading(false);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
-        // Auto-select conversation từ URL hoặc chọn cái đầu tiên
-        let selectedConversation = null;
-        if (conversationId) {
-            selectedConversation = mockConversations.find(c => c.id === parseInt(conversationId));
-        }
-        
-        if (!selectedConversation && mockConversations.length > 0) {
-            selectedConversation = mockConversations[0];
-        }
-        
-        setActiveConversation(selectedConversation);
-        if (selectedConversation) {
-            loadMessages(selectedConversation.id);
-        }
-    }, [isAuthenticated, conversationId]);
-
-    const loadMessages = (conversationId) => {
-        const mockMessages = {
-            1: [
-                {
-                    id: 1,
-                    text: 'Hi there! 👋',
-                    timestamp: new Date(Date.now() - 3600000),
-                    isSender: false,
-                    isRead: true
-                },
-                {
-                    id: 2,
-                    text: 'Hello! How are you?',
-                    timestamp: new Date(Date.now() - 3500000),
-                    isSender: true,
-                    isRead: true
-                },
-                {
-                    id: 3,
-                    text: "I'm good, thanks! How about you?",
-                    timestamp: new Date(Date.now() - 3400000),
-                    isSender: false,
-                    isRead: true
-                },
-                {
-                    id: 4,
-                    text: "I'm doing great! Just working on some projects.",
-                    timestamp: new Date(Date.now() - 3300000),
-                    isSender: true,
-                    isRead: true
-                }
-            ],
-            2: [
-                {
-                    id: 1,
-                    text: 'Nice photo! 📷',
-                    timestamp: new Date(Date.now() - 7200000),
-                    isSender: true,
-                    isRead: true
-                },
-                {
-                    id: 2,
-                    text: 'Thanks! I took it yesterday.',
-                    timestamp: new Date(Date.now() - 7100000),
-                    isSender: false,
-                    isRead: true
-                }
-            ],
-            3: [
-                {
-                    id: 1,
-                    text: 'Meeting tomorrow at 3 PM?',
-                    timestamp: new Date(Date.now() - 172800000),
-                    isSender: false,
-                    isRead: true
-                },
-                {
-                    id: 2,
-                    text: 'Yes, that works for me!',
-                    timestamp: new Date(Date.now() - 172700000),
-                    isSender: true,
-                    isRead: true
-                }
-            ],
-            4: [
-                {
-                    id: 1,
-                    text: 'Hey, are we still meeting today?',
-                    timestamp: new Date(Date.now() - 7200000),
-                    isSender: false,
-                    isRead: false
-                },
-                {
-                    id: 2,
-                    text: 'Yes, 2 PM at the usual place!',
-                    timestamp: new Date(Date.now() - 3600000),
-                    isSender: true,
-                    isRead: true
-                }
-            ]
-        };
-
-        setMessages(mockMessages[conversationId] || []);
-    };
-
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
-
-    const handleSendMessage = async (e) => {
-        e.preventDefault();
-        if (!newMessage.trim() || !activeConversation) return;
-
-        setIsSending(true);
-
-        const newMsg = {
-            id: messages.length + 1,
-            text: newMessage,
-            timestamp: new Date(),
-            isSender: true,
-            isRead: false
-        };
-
-        setMessages(prev => [...prev, newMsg]);
-        setNewMessage('');
-
-        // Simulate reply
-        setTimeout(() => {
-            const replyMsg = {
-                id: messages.length + 2,
-                text: getRandomReply(),
-                timestamp: new Date(),
-                isSender: false,
-                isRead: false
-            };
-            setMessages(prev => [...prev, replyMsg]);
-        }, 1000 + Math.random() * 2000);
-
-        setIsSending(false);
-    };
-
-    const getRandomReply = () => {
-        const replies = [
-            "That's interesting!",
-            "I see what you mean",
-            "Tell me more about that",
-            "I agree with you",
-            "That's amazing!",
-            "Thanks for sharing",
-            "I'll think about it",
-            "Sounds good to me"
-        ];
-        return replies[Math.floor(Math.random() * replies.length)];
-    };
-
-    const handleConversationSelect = (conversation) => {
-        setActiveConversation(conversation);
-        loadMessages(conversation.id);
-        navigate(`/messages/${conversation.id}`);
-    };
-
-    const filteredConversations = conversations.filter(conv =>
-        conv.user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        conv.user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const formatTime = (timestamp) => {
-        const now = new Date();
-        const messageTime = new Date(timestamp);
-        const diffInHours = (now - messageTime) / (1000 * 60 * 60);
-
-        if (diffInHours < 1) {
-            const diffInMinutes = Math.floor(diffInHours * 60);
-            return diffInMinutes === 0 ? 'now' : `${diffInMinutes}m`;
-        } else if (diffInHours < 24) {
-            return `${Math.floor(diffInHours)}h`;
-        } else {
-            return messageTime.toLocaleDateString();
-        }
-    };
-
-    if (!isAuthenticated) {
-        return (
-            <div className={styles.container}>
-                <div className={styles.loginPrompt}>
-                    <h2>Messages</h2>
-                    <p>Please log in to view your messages</p>
-                    <button onClick={() => navigate('/login')} className={styles.loginBtn}>
-                        Log In
-                    </button>
-                </div>
-            </div>
-        );
+  // ------------------ Load Messageable Users ------------------
+  const loadMessageableUsers = useCallback(async () => {
+    if (!isAuthenticated) return [];
+    setIsLoadingUsers(true);
+    try {
+      const response = await userService.getMessageableUsers(0, 100);
+      const users = response.success ? (response.data?.content || response.data || []) : getFallbackUsers();
+      setMessageableUsers(users);
+      return users;
+    } catch {
+      const fallback = getFallbackUsers();
+      setMessageableUsers(fallback);
+      return fallback;
+    } finally {
+      setIsLoadingUsers(false);
     }
+  }, [isAuthenticated]);
+
+  const getFallbackUsers = () => [
+    { id: 2, username: 'jane_smith', fullName: 'Jane Smith', profilePicture: 'https://i.pravatar.cc/150?img=2', isOnline: true, lastSeen: new Date(), isFollowing: true },
+    { id: 3, username: 'mike_wilson', fullName: 'Mike Wilson', profilePicture: 'https://i.pravatar.cc/150?img=3', isOnline: false, lastSeen: new Date(Date.now() - 3600000), isFollowing: true }
+  ];
+
+  // ------------------ Tạo conversations từ users ------------------
+  const createConversationsFromUsers = useCallback((users) => {
+    if (!users?.length) return [];
+    return users.map(user => ({
+      id: user.id,
+      user: {
+        id: user.id,
+        username: user.username,
+        fullName: user.fullName || user.username,
+        profilePicture: user.profilePicture || `https://i.pravatar.cc/150?u=${user.id}`,
+        isOnline: user.isOnline || Math.random() > 0.5,
+        lastSeen: user.lastSeen || new Date()
+      },
+      lastMessage: { content: 'Bắt đầu cuộc trò chuyện', messageType: 'TEXT', timestamp: new Date(), isRead: true },
+      unreadCount: 0,
+      canMessage: user.isFollowing
+    }));
+  }, []);
+
+  // ------------------ Load Conversations ------------------
+  const loadConversations = useCallback(async () => {
+    if (!isAuthenticated) return;
+    setIsLoadingConversations(true);
+    try {
+      const users = await loadMessageableUsers();
+      const convList = createConversationsFromUsers(users);
+      setConversations(convList);
+
+      let selected = convList.find(c => c.id === parseInt(conversationId)) || convList[0];
+      setActiveConversation(selected);
+    } catch {
+      setConversations(createConversationsFromUsers(getFallbackUsers()));
+    } finally {
+      setIsLoadingConversations(false);
+    }
+  }, [isAuthenticated, conversationId, loadMessageableUsers, createConversationsFromUsers]);
+
+  useEffect(() => { loadConversations(); }, [loadConversations]);
+
+  // ------------------ WebSocket ------------------
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      chatService.connect(user.id, () => console.log('WS connected'), console.error);
+    }
+    return () => chatService.disconnect();
+  }, [isAuthenticated, user]);
+
+  // ------------------ Typing indicator ------------------
+  useEffect(() => {
+    const handleTyping = (data) => { 
+      if (data.userId === activeConversation?.id) setIsTyping(data.isTyping); 
+    };
+    chatService.onTyping(handleTyping);
+    return () => chatService.offTyping(handleTyping);
+  }, [activeConversation]);
+
+  const handleTypingIndicator = useCallback((typing) => {
+    if (activeConversation) chatService.sendTypingIndicator(activeConversation.id, typing);
+  }, [activeConversation]);
+
+  // ------------------ Handle Send Message ------------------
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !activeConversation) return;
+    setIsSending(true);
+    try {
+      await sendTextMessage(newMessage); // Gửi REST + WS đã handle
+      setNewMessage('');
+      handleTypingIndicator(false);
+    } finally { setIsSending(false); }
+  };
+
+  // ------------------ Chọn conversation ------------------
+  const handleConversationSelect = (conversation) => {
+    setActiveConversation(conversation);
+    navigate(`/messages/${conversation.id}`);
+    if (conversation.unreadCount > 0) markAsRead(); // dùng hook để update local state
+  };
+
+  // ------------------ Bắt đầu chat mới ------------------
+  const startNewConversation = (user) => {
+    const newConv = {
+      id: user.id,
+      user: {
+        id: user.id,
+        username: user.username,
+        fullName: user.fullName || user.username,
+        profilePicture: user.profilePicture || `https://i.pravatar.cc/150?u=${user.id}`,
+        isOnline: user.isOnline || true,
+        lastSeen: new Date()
+      },
+      lastMessage: { content: 'Bắt đầu cuộc trò chuyện', messageType: 'TEXT', timestamp: new Date(), isRead: true },
+      unreadCount: 0,
+      canMessage: true
+    };
+    setConversations(prev => prev.find(c => c.id === user.id) ? prev : [newConv, ...prev]);
+    setActiveConversation(newConv);
+    setShowNewChatModal(false);
+    navigate(`/messages/${user.id}`);
+  };
+
+  // ------------------ Helpers hiển thị ------------------
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '';
+    const now = new Date(), msgTime = new Date(timestamp);
+    const diffH = (now - msgTime) / (1000*60*60);
+    if (diffH < 1) return Math.max(Math.floor(diffH*60),1) + 'm';
+    if (diffH < 24) return Math.floor(diffH)+'h';
+    return msgTime.toLocaleDateString();
+  };
+
+  const getMessagePreview = (message) => {
+    if (!message) return 'Bắt đầu cuộc trò chuyện';
+    const icons = { TEXT:'💬', IMAGE:'🖼️', VIDEO:'🎥', VOICE:'🎤', FILE:'📎', LOCATION:'📍', STICKER:'😊', SYSTEM:'⚙️' };
+    const icon = icons[message.messageType] || '💬';
+    switch (message.messageType) {
+      case 'TEXT': return `${icon} ${message.content}`;
+      case 'IMAGE': return `${icon} Đã gửi hình ảnh`;
+      case 'VIDEO': return `${icon} Đã gửi video`;
+      case 'VOICE': return `${icon} Tin nhắn thoại`;
+      case 'FILE': return `${icon} Tệp đính kèm`;
+      case 'LOCATION': return `${icon} Vị trí`;
+      case 'STICKER': return `${icon} Nhãn dán`;
+      default: return `${icon} ${message.content}`;
+    }
+  };
+
+  const getMessageIcon = (type) => ({ TEXT:'💬', IMAGE:'🖼️', VIDEO:'🎥', VOICE:'🎤', FILE:'📎', LOCATION:'📍', STICKER:'😊', SYSTEM:'⚙️' }[type]||'💬');
+
+  const filteredConversations = conversations.filter(c =>
+    c.user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // ------------------ New Chat Modal ------------------
+  const NewChatModal = () => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    const handleSearch = async (query) => {
+      setSearchQuery(query);
+      if (!query.trim()) return setSearchResults([]);
+      setIsSearching(true);
+      try {
+        const res = await userService.searchMessageableUsers(query);
+        setSearchResults(res.content || []);
+      } catch { setSearchResults([]); } finally { setIsSearching(false); }
+    };
+
+    const displayUsers = searchQuery ? searchResults : messageableUsers.filter(u =>
+      u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
-        <div className={styles.container}>
-            {/* Header */}
-            <header className={styles.header}>
-                <div className={styles.headerContent}>
-                    <button className={styles.backBtn} onClick={() => navigate('/')}>
-                        <span>←</span>
-                    </button>
-                    <h1 className={styles.headerTitle}>Messages</h1>
-                    <button className={styles.newChatBtn}>
-                        <span>✏️</span>
-                    </button>
+      <div className={styles.modalOverlay} onClick={() => setShowNewChatModal(false)}>
+        <div className={styles.modalContent} onClick={e=>e.stopPropagation()}>
+          <div className={styles.modalHeader}>
+            <h3>Tin nhắn mới</h3>
+            <button className={styles.closeBtn} onClick={()=>setShowNewChatModal(false)}>✕</button>
+          </div>
+          <div className={styles.searchContainer}>
+            <input type="text" placeholder="Tìm kiếm người dùng..." value={searchQuery} onChange={e=>handleSearch(e.target.value)} className={styles.searchInput}/>
+          </div>
+          <div className={styles.usersList}>
+            {isSearching ? <div className={styles.loading}>Đang tìm kiếm...</div> :
+            displayUsers.length ? displayUsers.map(u => (
+              <div key={u.id} className={styles.userItem} onClick={()=>startNewConversation(u)}>
+                <div className={styles.userAvatar}><img src={u.profilePicture} alt={u.username} onError={e=>e.target.src=`https://ui-avatars.com/api/?name=${u.username}&background=random`} /></div>
+                <div className={styles.userInfo}>
+                  <span className={styles.username}>{u.username}</span>
+                  <span className={styles.fullName}>{u.fullName}</span>
                 </div>
-            </header>
-
-            <div className={styles.content}>
-                {/* Conversations List - LUÔN HIỂN THỊ */}
-                <div className={styles.sidebar}>
-                    <div className={styles.sidebarHeader}>
-                        <h2 className={styles.sidebarTitle}>{user?.username}</h2>
-                        <button className={styles.newMessageBtn}>
-                            <span>✉️</span>
-                        </button>
-                    </div>
-
-                    <div className={styles.searchContainer}>
-                        <input
-                            type="text"
-                            placeholder="Search messages..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className={styles.searchInput}
-                        />
-                    </div>
-
-                    <div className={styles.conversationsList}>
-                        {filteredConversations.map(conversation => (
-                            <div
-                                key={conversation.id}
-                                className={`${styles.conversationItem} ${activeConversation?.id === conversation.id ? styles.active : ''}`}
-                                onClick={() => handleConversationSelect(conversation)}
-                            >
-                                <div className={styles.conversationAvatar}>
-                                    <img src={conversation.user.profilePicture} alt={conversation.user.username} />
-                                    {conversation.user.isOnline && <span className={styles.onlineIndicator}></span>}
-                                </div>
-                                <div className={styles.conversationInfo}>
-                                    <div className={styles.conversationHeader}>
-                                        <span className={styles.username}>{conversation.user.username}</span>
-                                        <span className={styles.timestamp}>{formatTime(conversation.lastMessage.timestamp)}</span>
-                                    </div>
-                                    <div className={styles.conversationPreview}>
-                                        <span className={`${styles.messagePreview} ${!conversation.lastMessage.isRead && !conversation.lastMessage.isSender ? styles.unread : ''}`}>
-                                            {conversation.lastMessage.isSender ? 'You: ' : ''}
-                                            {conversation.lastMessage.text}
-                                        </span>
-                                        {conversation.unreadCount > 0 && (
-                                            <span className={styles.unreadBadge}>{conversation.unreadCount}</span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Chat Area - LUÔN HIỂN THỊ */}
-                <div className={styles.chatArea}>
-                    {activeConversation ? (
-                        <>
-                            {/* Chat Header */}
-                            <div className={styles.chatHeader}>
-                                <div className={styles.chatUserInfo}>
-                                    <div className={styles.chatAvatar}>
-                                        <img src={activeConversation.user.profilePicture} alt={activeConversation.user.username} />
-                                        {activeConversation.user.isOnline && <span className={styles.onlineIndicator}></span>}
-                                    </div>
-                                    <div className={styles.chatUserDetails}>
-                                        <span className={styles.username}>{activeConversation.user.username}</span>
-                                        <span className={styles.userStatus}>
-                                            {activeConversation.user.isOnline ? 'Online' : `Last seen ${formatTime(activeConversation.user.lastSeen)}`}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className={styles.chatActions}>
-                                    <button className={styles.actionBtn}>
-                                        <span>📞</span>
-                                    </button>
-                                    <button className={styles.actionBtn}>
-                                        <span>ⓘ</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Messages List */}
-                            <div className={styles.messagesList}>
-                                {messages.length > 0 ? (
-                                    <>
-                                        {messages.map(message => (
-                                            <div
-                                                key={message.id}
-                                                className={`${styles.message} ${message.isSender ? styles.sent : styles.received}`}
-                                            >
-                                                <div className={styles.messageBubble}>
-                                                    <p className={styles.messageText}>{message.text}</p>
-                                                    <span className={styles.messageTime}>{formatTime(message.timestamp)}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        <div ref={messagesEndRef} />
-                                    </>
-                                ) : (
-                                    <div className={styles.emptyChat}>
-                                        <span className={styles.emptyChatIcon}>💬</span>
-                                        <p>No messages yet</p>
-                                        <p>Start a conversation by sending a message!</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Message Input */}
-                            <form onSubmit={handleSendMessage} className={styles.messageInputContainer}>
-                                <div className={styles.inputWrapper}>
-                                    <button type="button" className={styles.attachmentBtn}>
-                                        <span>📎</span>
-                                    </button>
-                                    <input
-                                        type="text"
-                                        value={newMessage}
-                                        onChange={(e) => setNewMessage(e.target.value)}
-                                        placeholder="Message..."
-                                        className={styles.messageInput}
-                                        disabled={isSending}
-                                    />
-                                    <button
-                                        type="submit"
-                                        className={styles.sendBtn}
-                                        disabled={!newMessage.trim() || isSending}
-                                    >
-                                        {isSending ? '⏳' : '➤'}
-                                    </button>
-                                </div>
-                            </form>
-                        </>
-                    ) : (
-                        <div className={styles.noConversationSelected}>
-                            <div className={styles.emptyState}>
-                                <span className={styles.emptyStateIcon}>💬</span>
-                                <h3>Your Messages</h3>
-                                <p>Select a conversation to start messaging</p>
-                                <p>Or start a new conversation with someone!</p>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+                {!u.isFollowing && <span className={styles.followHint}>Theo dõi để nhắn tin</span>}
+              </div>
+            )) : <div className={styles.noUsers}>{searchQuery ? 'Không tìm thấy người dùng' : 'Chưa có người để nhắn tin'}</div>}
+          </div>
         </div>
+      </div>
     );
+  };
+
+  // ------------------ UI ------------------
+  if (!isAuthenticated) return (
+    <div className={styles.container}>
+      <div className={styles.loginPrompt}>
+        <h2>Messages</h2>
+        <p>Please log in to view your messages</p>
+        <button onClick={()=>navigate('/login')} className={styles.loginBtn}>Log In</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className={styles.container}>
+      {/* Header */}
+      <header className={styles.header}>
+        <div className={styles.headerContent}>
+          <button className={styles.backBtn} onClick={()=>navigate('/')}><span>←</span></button>
+          <h1 className={styles.headerTitle}>Messages</h1>
+          <button className={styles.newChatBtn} onClick={()=>setShowNewChatModal(true)}><span>✏️</span></button>
+        </div>
+      </header>
+
+      <div className={styles.content}>
+        {/* Sidebar */}
+        <div className={styles.sidebar}>
+          <div className={styles.sidebarHeader}>
+            <h2 className={styles.sidebarTitle}>{user?.username}</h2>
+            <button className={styles.newMessageBtn} onClick={()=>setShowNewChatModal(true)}><span>✉️</span></button>
+          </div>
+          <div className={styles.searchContainer}>
+            <input type="text" placeholder="Tìm kiếm tin nhắn..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} className={styles.searchInput}/>
+          </div>
+          <div className={styles.conversationsList}>
+            {isLoadingConversations ? <div className={styles.loadingConversations}><div className={styles.loadingSpinner}></div><p>Đang tải danh sách trò chuyện...</p></div> :
+            filteredConversations.length ? filteredConversations.map(conv => (
+              <div key={conv.id} className={`${styles.conversationItem} ${activeConversation?.id===conv.id?styles.active:''}`} onClick={()=>handleConversationSelect(conv)}>
+                <div className={styles.conversationAvatar}>
+                  <img src={conv.user.profilePicture} alt={conv.user.username} onError={e=>e.target.src=`https://ui-avatars.com/api/?name=${conv.user.username}&background=random`}/>
+                  {conv.user.isOnline && <span className={styles.onlineIndicator}></span>}
+                </div>
+                <div className={styles.conversationInfo}>
+                  <div className={styles.conversationHeader}>
+                    <span className={styles.username}>{conv.user.username}</span>
+                    <span className={styles.timestamp}>{formatTime(conv.lastMessage?.timestamp)}</span>
+                  </div>
+                  <div className={styles.conversationPreview}>
+                    <span className={`${styles.messagePreview} ${conv.unreadCount>0?styles.unread:''}`}>{getMessagePreview(conv.lastMessage)}</span>
+                    {conv.unreadCount>0 && <span className={styles.unreadBadge}>{conv.unreadCount}</span>}
+                  </div>
+                </div>
+              </div>
+            )) : <div className={styles.noConversations}><span className={styles.noConversationsIcon}>💬</span><p>Chưa có cuộc trò chuyện nào</p><button className={styles.startChatBtn} onClick={()=>setShowNewChatModal(true)}>Bắt đầu cuộc trò chuyện mới</button></div>}
+          </div>
+        </div>
+
+        {/* Chat Area */}
+        <div className={styles.chatArea}>
+          {activeConversation ? (
+            <>
+              {/* Chat Header */}
+              <div className={styles.chatHeader}>
+                <div className={styles.chatUserInfo}>
+                  <div className={styles.chatAvatar}>
+                    <img src={activeConversation.user.profilePicture} alt={activeConversation.user.username} onError={e=>e.target.src=`https://ui-avatars.com/api/?name=${activeConversation.user.username}&background=random`}/>
+                    {activeConversation.user.isOnline && <span className={styles.onlineIndicator}></span>}
+                  </div>
+                  <div className={styles.chatUserDetails}>
+                    <span className={styles.username}>{activeConversation.user.username}</span>
+                    <span className={styles.userStatus}>{activeConversation.user.isOnline?'Online':`Hoạt động ${formatTime(activeConversation.user.lastSeen)}`}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div className={styles.messagesList}>
+                {isLoading && !messages.length ? <div className={styles.loading}><div className={styles.loadingSpinner}></div><p>Đang tải tin nhắn...</p></div> :
+                error ? <div className={styles.error}>Lỗi: {error}</div> :
+                messages.length ? (
+                  <>
+                    {hasMore && <button onClick={loadMore} className={styles.loadMoreBtn}>Tải tin nhắn cũ hơn</button>}
+                    {messages.map(msg=>(
+                      <div key={msg.id} className={`${styles.message} ${msg.senderId===user.id?styles.sent:styles.received}`}>
+                        <div className={styles.messageBubble}>
+                          {msg.messageType!=='TEXT' && <span className={styles.messageIcon}>{getMessageIcon(msg.messageType)}</span>}
+                          <p className={styles.messageText}>{msg.content}</p>
+                          <span className={styles.messageTime}>
+                            {formatTime(msg.createdAt)}
+                            {msg.isRead && msg.senderId===user.id && <span className={styles.readIndicator}> ✓✓</span>}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {isTyping && <div className={`${styles.message} ${styles.received}`}><div className={styles.typingIndicator}><span></span><span></span><span></span></div></div>}
+                    <div ref={messagesEndRef}/>
+                  </>
+                ) : <div className={styles.emptyChat}><span className={styles.emptyChatIcon}>💬</span><p>Chưa có tin nhắn nào</p><p>Bắt đầu trò chuyện bằng cách gửi tin nhắn!</p></div>}
+              </div>
+
+              {/* Message Input */}
+              <form onSubmit={handleSendMessage} className={styles.messageInputContainer}>
+                <div className={styles.inputWrapper}>
+                  <input type="text" value={newMessage} onChange={e=>{setNewMessage(e.target.value); handleTypingIndicator(true);}} onBlur={()=>handleTypingIndicator(false)} placeholder="Nhập tin nhắn..." className={styles.messageInput} disabled={isSending}/>
+                  <button type="submit" className={styles.sendBtn} disabled={!newMessage.trim()||isSending}>{isSending?'⏳':'➤'}</button>
+                </div>
+              </form>
+            </>
+          ) : <div className={styles.noConversationSelected}><div className={styles.emptyState}><span className={styles.emptyStateIcon}>💬</span><h3>Tin nhắn của bạn</h3><p>Chọn một cuộc trò chuyện để bắt đầu nhắn tin</p></div></div>}
+        </div>
+      </div>
+
+      {showNewChatModal && <NewChatModal />}
+    </div>
+  );
 };
 
 export default Messages;
+
